@@ -9,7 +9,7 @@ Code, model outputs, result tables and the paper source for
 A study of what a drift-aware weighting rule (PromptShift-CRC) adds to an online conformal risk control update when the prompts a model receives change over time. The short answer, which the paper supports with theory and experiments, is:
 
 - The long-run violation rate is controlled by the online update for any weights (Theorem 2). Marginal coverage cannot separate weighting schemes.
-- PromptShift-CRC stays within about half a percentage point of the Adaptive CRC curve at equal sharpness, avoids the worst Adaptive CRC window, and is matched or beaten by DtACI in most settings. Its value is that no window has to be chosen.
+- PromptShift-CRC stays within about half a percentage point of the Adaptive CRC curve at equal sharpness, avoids the worst Adaptive CRC window, and is matched or beaten by DtACI in most settings. Its practical value is that it performs like a mid-ranked window without having to choose one.
 - On MMLU and TruthfulQA the upper tail of the risk does not move between domains, so no weighting can help. On RealToxicityPrompts it does move, and the same conclusions hold.
 
 ## Layout
