@@ -1,4 +1,4 @@
-% Section 6.1 of the revised paper (synthetic streams). Numbers come from numbers_generated.tex.
+% Synthetic streams. Numbers come from numbers_generated.tex.
 % Differences are written "A minus B = value" so the sign is always explicit.
 
 \section{Results}\label{sec:results}
@@ -8,7 +8,7 @@
 The five synthetic generators each contain three regime changes in the prompt features and in the risk. Table~\ref{tab:synthetic} reports the mean over \nSeeds{} seeds, and Figure~\ref{fig:frontier-syn} plots post-shift violation against sharpness.
 
 \paragraph{The update does the long-run work.}
-Static calibration reaches coverage \synStaticCov{} and rolling calibration \synRollingCov{}, below the target of $0.90$. Every method with the online update is within $0.02$ of the target, as Theorem~\ref{thm:longrun} requires (the bound is $0.018$ to $0.024$ for these streams and is listed for every experiment in Table~\ref{tab:hyper}). Removing the update from PromptShift-CRC lowers its coverage to \synNoUpdCov{} and raises its post-shift violation from \synPSPost{} to \synNoUpdPost{}. Marginal coverage therefore does not separate the weighting schemes, and we compare them on post-shift violation, maximum local violation and sharpness.
+Static calibration reaches coverage \synStaticCov{} and rolling calibration \synRollingCov{}, below the target of $0.90$. Every method with the online update is within $0.02$ of the target, consistent with Theorem~\ref{thm:longrun} (the bound is $0.018$ to $0.024$ for these streams and is listed for every experiment in Table~\ref{tab:hyper}). Removing the update from PromptShift-CRC lowers its coverage to \synNoUpdCov{} and raises its post-shift violation from \synPSPost{} to \synNoUpdPost{}. Marginal coverage therefore does not separate the weighting schemes, and we compare them on post-shift violation, maximum local violation and sharpness.
 
 \paragraph{PromptShift-CRC against the matched baseline.}
 Adaptive CRC with a window equal to PromptShift-CRC's recent window has post-shift violation \synMatchedPost{}, against \synPSPost{} for PromptShift-CRC. Paired by seed (Table~\ref{tab:paired}), PromptShift-CRC minus the matched baseline is between \synPostMatchedLo{} and \synPostMatchedHi{} across the five streams, and PromptShift-CRC is lower in only \synPostMatchedLowerMin{} to \synPostMatchedLowerMax{} of \nSeeds{} seeds, so it is slightly \emph{worse} on local validity. It is sharper: the difference in mean threshold is between \synThrMatchedLo{} and \synThrMatchedHi{}, and PromptShift-CRC is lower in \synThrMatchedLowerMin{} to \synThrMatchedLowerMax{} of \nSeeds{} seeds. The two differences have opposite signs and are of the same size, about half a percentage point, so the comparison is a trade-off and not a win.

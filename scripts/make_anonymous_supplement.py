@@ -8,7 +8,7 @@ REL = ROOT / "release" / "promptshift-crc"
 OUT = ROOT / "release" / "anonymous_supplement"
 if OUT.exists():
     shutil.rmtree(OUT)
-shutil.copytree(REL, OUT, ignore=shutil.ignore_patterns("paper", "CITATION.cff", "LICENSE", "build_tmlr.py", "make_release.py", "make_anonymous_supplement.py", "__pycache__"))
+shutil.copytree(REL, OUT, ignore=shutil.ignore_patterns("paper", "CITATION.cff", "LICENSE", "build_tmlr.py", "make_release.py", "make_anonymous_supplement.py", "__pycache__", ".git"))
 readme = (OUT / "README.md").read_text(encoding="utf-8")
 readme = readme.replace("Code, model outputs, result tables and the paper source for\n\n> Opoku, J. and Banahene, D. *Conformal Risk Control for Foundation Models Under Prompt Shift: What Weighting Adds to the Online Update.*",
                         "Code, model outputs and result tables for the submission *Conformal Risk Control for Foundation Models Under Prompt Shift: What Weighting Adds to the Online Update* (anonymous supplementary material).")

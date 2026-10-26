@@ -400,9 +400,9 @@ for nm, cfg, w_ in [("Proxy: TruthfulQA fields", _C.CFG_TQA, "see text"), ("Prox
     _key = {"Proxy: TruthfulQA fields": "TruthfulQA", "Proxy: SummEval": "SummEval", "Proxy: LongHalQA": "LongHalQA", "Proxy: RealToxicityPrompts fields": "RealToxicityPrompts"}[nm]
     _gb = _pb[(_pb.dataset == _key) & (_pb.method == "promptshift_crc")].gc_bound.iloc[0]
     hp_rows.append([nm, "rule", "rule", "rule", f"{cfg['bw']}", f"{cfg['gate_c']}", f"{cfg['gate_k']}", f"{cfg['gamma']}", "3W", f"{_gb:.3f}"])
-table("tab:hyper", "Settings used in every experiment. $W$ is the full window, ``recent'' the recency window, $h$ the kernel bandwidth, gate centre $c$ and slope $\kappa$ as in Section~\ref{sec:method}, "
+table("tab:hyper", "Settings used in every experiment. $W$ is the full window, ``recent'' the recency window, $h$ the kernel bandwidth, gate centre $c$ and slope $\kappa$ as in Section~\\ref{sec:method}, "
       "$\gamma$ the step of the online update, and ``pool'' the length of the history used by the weighted rules. All use $\\alpha=0.1$. The synthetic constants are those of the earlier version of this work and were not changed; "
-      "the real-stream constants follow rules fixed in advance. ``Bound'' is the Theorem~\ref{thm:longrun} bound on the distance between coverage and $0.90$. For the proxy streams the window lengths follow the rule in the released script (a fraction of the stream length with caps).",
+      "the real-stream constants follow rules fixed in advance. ``Bound'' is the Theorem~\\ref{thm:longrun} bound on the distance between coverage and $0.90$. For the proxy streams the window lengths follow the rule in the released script (a fraction of the stream length with caps).",
       ["Experiment", "Prefix", "$W$", "Recent", "$h$", "Gate $c$", "Slope $\kappa$", "$\gamma$", "Pool", "Bound"], hp_rows)
 
 import re
