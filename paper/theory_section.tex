@@ -57,7 +57,7 @@ Substituting gives the first bound; the second uses $1/(1+m_t)\le 1$.
 \end{proof}
 
 Theorem~\ref{thm:cond} holds at a fixed level and does not apply to the data-dependent level $\alpha_t$ of the online rule;
-Theorem~\ref{thm:longrun} below covers that rule for every choice of weights, including weights that depend on past scores.
+Theorem~\ref{thm:longrun} below covers that rule for every choice of weights, including weights that depend on past scores, and, for weights that depend on the features only, Proposition~\ref{prop:running} bounds its conditional violation probability at the running level.
 
 \begin{lemma}[Size of the correction]\label{lem:m}
 $1/n_{\mathrm{eff},t}\le m_t\le n_{\mathrm{eff},t}^{-1/2}$.
@@ -115,6 +115,40 @@ This is Proposition~4.1 of Gibbs and Cand\`es (2021) specialised to our update; 
 two conventions at the extremes ($\ell_t>1$ and $\ell_t<0$) are what the proof uses, and the correction factor
 $1+m_t$ leaves them unchanged. The bound is the same for every weighting scheme: \emph{long-run marginal
 coverage is a property of the update, not of PromptShift-CRC's weights}. The bound is $0.018$ to $0.024$ for the synthetic streams, $0.020$ for MMLU, $0.012$ for RealToxicityPrompts and $0.043$ for TruthfulQA.
+
+\begin{proposition}[Conditional bound at the running level]\label{prop:running}
+Suppose that every law $L_s$ with $s<t$ and $p_{t,s}>0$ is continuous. Fix $t$, $\eta\in(0,1)$ and an integer $M\ge 1$, and write
+\[
+ \varepsilon_t=\sqrt{\frac{\log(2M/\eta)}{2\,n_{\mathrm{eff},t}}}+\frac1M .
+\]
+Under Assumption~\ref{ass:ci}, conditionally on $E_{1:t}$, with probability at least $1-\eta$ over $R_{1:t-1}$,
+\[
+ \mathbb P\bigl(R_t>q_t\ \big|\ E_{1:t},R_{1:t-1}\bigr)\ \le\ \max\{\alpha_t,0\}+\sum_{s<t}p_{t,s}\,d_{\mathrm{TV}}(L_s,L_t)+\varepsilon_t ,
+\]
+where $q_t$ is the threshold of the online rule at its own level $\alpha_t$.
+\end{proposition}
+
+\begin{proof}
+Condition on $E_{1:t}$, so the weights $p_{t,s}$ are fixed numbers. The level $\alpha_t$ and the threshold $q_t$ are functions of $R_{1:t-1}$ (and of the features), and under Assumption~\ref{ass:ci} the score $R_t$ is independent of $R_{1:t-1}$ with law $L_t$. Hence $\mathbb P(R_t>q_t\mid E_{1:t},R_{1:t-1})=1-F_t(q_t)$, where $F_s$ is the distribution function of $L_s$.
+
+Let $\bar F=\sum_{s<t}p_{t,s}F_s$, which is continuous because every $F_s$ in the sum is, and $\hat F(x)=\sum_{s<t}p_{t,s}\mathbf 1\{R_s\le x\}$. For a fixed $x$, $\hat F(x)-\bar F(x)$ is a sum of independent, mean-zero terms $p_{t,s}(\mathbf 1\{R_s\le x\}-F_s(x))$, each in an interval of length $p_{t,s}$, so Hoeffding's inequality gives $\mathbb P(|\hat F(x)-\bar F(x)|>\varepsilon)\le 2\exp(-2\varepsilon^2 n_{\mathrm{eff},t})$. The grid argument in the proof of Proposition~\ref{prop:ess} uses only independence of the summands, continuity of the target function (so that $\bar F(x_j)=j/M$) and the absence of atoms in each $L_s$ (so that almost surely no $R_s$ equals any $x_j$). The grid $x_j=\bar F^{-1}(j/M)$ depends on $E_{1:t}$ only, so it gives an event $\mathcal E$ with $\mathbb P(\mathcal E\mid E_{1:t})\ge 1-\eta$ on which $\sup_x|\hat F(x)-\bar F(x)|\le\varepsilon_t$. The event $\mathcal E$ does not involve $\alpha_t$ or $q_t$, and the supremum is over all $x$, so the bound holds at the random point $q_t$.
+
+On $\mathcal E$ there are three cases. If $\ell_t>1$ then $q_t=+\infty$, $1-F_t(q_t)=0$, and the right-hand side is nonnegative; this case contains every $\alpha_t<0$, which the unprojected update can produce (Theorem~\ref{thm:longrun}), and without the positive part the bound could fail there. If $\ell_t\le 0$ then $\alpha_t\ge 1$ and the claim is trivial because $1-F_t(q_t)\le 1\le\alpha_t$. If $0<\ell_t\le 1$ then $q_t$ is finite, $\hat F(q_t)\ge\ell_t$ by the definition of the quantile and right-continuity of $\hat F$, and $\alpha_t\in[0,1)$ (since $\alpha_t<0$ would force $\ell_t>1$) gives $\ell_t=(1-\alpha_t)(1+m_t)\ge 1-\alpha_t=1-\max\{\alpha_t,0\}$. Then
+\[
+ F_t(q_t)=\bar F(q_t)+\sum_{s<t}p_{t,s}\bigl(F_t(q_t)-F_s(q_t)\bigr)\ \ge\ \hat F(q_t)-\varepsilon_t-\sum_{s<t}p_{t,s}\,d_{\mathrm{TV}}(L_s,L_t)\ \ge\ 1-\alpha_t-\varepsilon_t-\sum_{s<t}p_{t,s}\,d_{\mathrm{TV}}(L_s,L_t),
+\]
+because $|F_t(x)-F_s(x)|\le d_{\mathrm{TV}}(L_s,L_t)$ for every $x$. Rearranging gives the claim.
+\end{proof}
+
+Taking expectations over $R_{1:t-1}$, $\mathbb P(R_t>q_t\mid E_{1:t})\le\mathbb E[\max\{\alpha_t,0\}\mid E_{1:t}]+\sum_{s<t}p_{t,s}d_{\mathrm{TV}}(L_s,L_t)+\varepsilon_t+\eta$. Against Theorem~\ref{thm:cond} the drift term enters with coefficient $1$ instead of $2/(1+m_t)$, and $\varepsilon_t+\eta$ is the price of the data-dependent level. The proof uses only that $\alpha_t$ is a function of the past, so the bound holds for any history-dependent level and any feature-measurable weights. Keeping the factor $1+m_t$ would improve the finite-threshold case by $m_t(1-\alpha_t)\le n_{\mathrm{eff},t}^{-1/2}$ (Lemma~\ref{lem:m}), which we omit. The bound does not apply to the $0/1$ error risk, whose distribution has atoms.
+
+\begin{remark}[What the bound does and does not say]\label{rem:running}
+The bound is relative to the running level $\alpha_t$, not to $\alpha$, and it is a structural statement and not a certificate: for $n_{\mathrm{eff},t}=375$, $M=100$ and $\eta=0.05$ the sampling term is $\varepsilon_t\approx 0.115$ ($n_{\mathrm{eff},t}=375$ is the mean effective size of PromptShift-CRC on MMLU). The drift term can fall (under the Lipschitz condition of Corollary~\ref{cor:drift}) and the sampling term rises (Lemma~\ref{lem:m}) when weight is concentrated on prompts close to $E_t$. The bound does not say that $\alpha_t$ stays close to $\alpha$. For that we have Theorem~\ref{thm:longrun} and the following identity, which follows by summing the update over the window, as in the proof of Theorem~\ref{thm:longrun}: for any window $a\le t\le b$ of length $L=b-a+1$,
+\[
+ \frac1L\sum_{t=a}^{b}\mathrm{err}_t-\alpha=\frac{\alpha_a-\alpha_{b+1}}{L\gamma}.
+\]
+The local violation rate of the online rule over a window is therefore $\alpha$ plus the drop $\alpha_a-\alpha_{b+1}$ of the level over that window, divided by $L\gamma$. For example, at $\alpha=0.1$ and $\gamma=0.02$ a maximum local violation of $0.20$ over $L=120$ steps is a drop of $0.24$.
+\end{remark}
 
 \begin{remark}[What gating can and cannot do]\label{rem:gate}
 Theorem~\ref{thm:longrun} gives every weighting scheme the same long-run bound, so long-run marginal coverage cannot distinguish schemes.

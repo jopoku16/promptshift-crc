@@ -5,7 +5,7 @@
 
 \subsection{Synthetic streams}\label{sec:res-syn}
 
-The five synthetic generators each contain three regime changes in the prompt features and in the risk. Table~\ref{tab:synthetic} reports the mean over \nSeeds{} seeds, and Figure~\ref{fig:frontier-syn} plots post-shift violation against sharpness.
+Each of the five synthetic generators has three era boundaries at which the prompt features and the risk change; within an era the regime is fixed or alternates between two regimes every $50$ to $80$ steps. Table~\ref{tab:synthetic} reports the mean over \nSeeds{} seeds, and Figure~\ref{fig:frontier-syn} plots post-shift violation against sharpness.
 
 \paragraph{The update does the long-run work.}
 Static calibration reaches coverage \synStaticCov{} and rolling calibration \synRollingCov{}, below the target of $0.90$. Every method with the online update is within $0.02$ of the target, consistent with Theorem~\ref{thm:longrun} (the bound is $0.018$ to $0.024$ for these streams and is listed for every experiment in Table~\ref{tab:hyper}). Removing the update from PromptShift-CRC lowers its coverage to \synNoUpdCov{} and raises its post-shift violation from \synPSPost{} to \synNoUpdPost{}. Marginal coverage therefore does not separate the weighting schemes, and we compare them on post-shift violation, maximum local violation and sharpness.

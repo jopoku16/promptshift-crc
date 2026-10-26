@@ -190,10 +190,13 @@ for task, tag, famlist in [("mmlu", "Qwen2.5-1.5B-Instruct", ["catblock", "subje
         for m in ["promptshift_crc", "no_representation_weighting", "rep_aci", "dtaci", "dsr_aci"]:
             x = d[(d.family == fam) & (d.method == m)]
             r_.append("--" if x.empty else f"{x.iloc[0]['mean']:+.4f} ({x.iloc[0]['se']:.4f})")
+        xi = d[(d.family == fam) & (d.method == "promptshift_crc")].iloc[0]
+        r_.append(f"{xi['mean_inside']:+.4f} ({xi['se_inside']:.4f}), {int(xi['n_inside'])} of {int(xi['n'])}")
         rows.append(r_)
     table(f"tab:frontier_{task}", f"Frontier gap on {task.upper()} streams (post-shift violation minus the Adaptive-CRC window-sweep curve at the same mean threshold; "
-          "mean over orderings with standard error). Negative is better than Adaptive CRC.",
-          ["Ordering", "PromptShift-CRC", "Gate + recency only", "Kernel + update", "DtACI", "Density ratio"], rows)
+          "mean over orderings with standard error). Negative is better than Adaptive CRC. Where a method's mean threshold lies outside the range of the window sweep the curve is clipped to its nearest end; "
+          "the last column repeats the PromptShift-CRC gap over the orderings whose threshold lies inside the range.",
+          ["Ordering", "PromptShift-CRC", "Gate + recency only", "Kernel + update", "DtACI", "Density ratio", "PromptShift-CRC, inside range"], rows)
 
 # proxy streams (appendix)
 pub = RES / "phase_a_public_summary.csv"
@@ -285,10 +288,12 @@ for held in posmat:
     jstar = int(np.argmin(ranks))
     Wh, PSh = posmat[held]
     d = PSh - Wh[:, jstar]
-    rows.append([held, f"{jstar + 1} of 5", f"{d.mean():+.4f}", f"{Wh.mean(axis=0).argmin() + 1} of 5", f"{(PSh - Wh.min(axis=1)).mean():+.4f}"])
+    se_ = d.std(ddof=1) / np.sqrt(len(d))
+    rows.append([held, f"{jstar + 1} of 5", f"{d.mean():+.4f} ({se_:.4f})", f"{Wh.mean(axis=0).argmin() + 1} of 5", f"{(PSh - Wh.min(axis=1)).mean():+.4f}"])
     macro("lofo" + "".join(ch for ch in held if ch.isalpha()), f"{d.mean():+.4f}")
+    macro("lofo" + "".join(ch for ch in held if ch.isalpha()) + "SE", f"{se_:.4f}")
 table("tab:lofo", "Choosing the Adaptive CRC window without looking at the held-out family. For each family of streams, the window (position in the five-window sweep, short to long) with the best mean rank "
-      "over the other four families is chosen; the entry is PromptShift-CRC's post-shift violation minus that window's on the held-out family (negative: PromptShift-CRC is lower). "
+      "over the other four families is chosen; the entry is PromptShift-CRC's post-shift violation minus that window's on the held-out family, with the paired standard error over streams or seeds (negative: PromptShift-CRC is lower). "
       "The last two columns give the window that is best on the held-out family itself and PromptShift-CRC's gap to that window in hindsight.",
       ["Held-out family", "Window chosen elsewhere", "PS $-$ chosen", "Best here", "PS $-$ best here"], rows)
 
@@ -327,6 +332,10 @@ def realmac(task, tag, fam, key, asfx="", default=True):
             x = d[d.method == m]
             if not x.empty:
                 macro(f"{key}Frontier{mt}", f"{x.iloc[0]['mean']:+.4f}"); macro(f"{key}Frontier{mt}SE", f"{x.iloc[0]['se']:.4f}")
+                if "mean_inside" in x.columns and mt in ("PS", "DtACI"):
+                    macro(f"{key}Frontier{mt}In", f"{x.iloc[0]['mean_inside']:+.4f}"); macro(f"{key}Frontier{mt}InSE", f"{x.iloc[0]['se_inside']:.4f}")
+                    macro(f"{key}Frontier{mt}InN", str(int(x.iloc[0]['n_inside']))); macro(f"{key}Frontier{mt}AllN", str(int(x.iloc[0]['n'])))
+                    macro(f"{key}Frontier{mt}OutN", str(int(x.iloc[0]['n']) - int(x.iloc[0]['n_inside'])))
 
 realmac("mmlu", "Qwen2.5-1.5B-Instruct", "catblock", "MmluCat")
 realmac("mmlu", "Qwen2.5-1.5B-Instruct", "subjectblock", "MmluSubj")
@@ -384,6 +393,258 @@ macro("RtpMeanLo", f"{rt.groupby('band').risk.mean().min():.3f}"); macro("RtpMea
 macro("RtpFracHigh", f"{(rt.risk > 0.5).mean():.3f}")
 
 
+# ---------------------------------------------------------------- round 4, item A: MMLU at levels where the target quantile moves, and the mechanism table
+def _spread(frame, regime_col, alpha, min_n=30):
+    sz_ = frame.groupby(regime_col).risk.transform("size")  # regimes with fewer than min_n prompts are left out of the range
+    q_ = frame[sz_ >= min_n].groupby(regime_col).risk.quantile(1 - alpha)
+    return float(q_.max() - q_.min())
+
+_tq = _jl("truthfulqa_Qwen2.5-1.5B-Instruct.jsonl")
+_q["band"] = pd.qcut(_q.prompt_toxicity.fillna(0), 4, labels=False, duplicates="drop")
+SPREAD = {("mmlu", a_): _spread(mm, "cat", a_) for a_ in (0.1, 0.2, 0.3)}
+SPREAD.update({("rtp_gpt2", a_): _spread(rt, "band", a_) for a_ in (0.05, 0.1, 0.2)})
+SPREAD.update({("rtp_qwen05b", 0.1): _spread(_q, "band", 0.1), ("truthfulqa", 0.1): _spread(_tq, "category", 0.1)})
+for a_, k_ in [(0.1, "AOne"), (0.2, "ATwo"), (0.3, "AThree")]:  # TeX macro names cannot contain digits
+    macro(f"MmluSpread{k_}", f"{SPREAD[('mmlu', a_)]:.3f}")
+macro("MmluSpreadNine", f"{SPREAD[('mmlu', 0.1)]:.3f}")
+macro("MmluSevenLo", f"{mm.groupby('cat').risk.quantile(0.7).min():.2f}"); macro("MmluSevenHi", f"{mm.groupby('cat').risk.quantile(0.7).max():.2f}")
+
+def _pm_frontier(nm_, fam_):
+    pmf = RES / f"real_{nm_}_ps_vs_matched.csv"; frf = RES / f"real_{nm_}_frontier.csv"
+    if not (pmf.exists() and frf.exists()):
+        return None
+    c_ = pd.read_csv(pmf); c_ = c_[(c_.family == fam_) & (c_.risk == "prob")]
+    f_ = pd.read_csv(frf); f_ = f_[(f_.family == fam_) & (f_.risk == "prob") & (f_.metric == "post_shift_viol")]
+    return c_, f_
+
+_arows = []
+for lab_, nm_, key_, a_ in [("$\\alpha=0.1$ (main)", "mmlu", "AOne", 0.1), ("$\\alpha=0.2$", "mmlu_Qwen2.5-1.5B-Instruct_alpha0.2", "ATwo", 0.2), ("$\\alpha=0.3$","mmlu_Qwen2.5-1.5B-Instruct_alpha0.3", "AThree", 0.3)]:
+    got_ = _pm_frontier(nm_, "catblock")
+    if got_ is None:
+        continue
+    c_, f_ = got_
+    a1_ = c_[c_.metric == "post_shift_viol"].iloc[0]; b1_ = c_[c_.metric == "mean_threshold"].iloc[0]
+    g_ = lambda m_: f_[f_.method == m_].iloc[0]
+    ps_, kp_, dt_ = g_("promptshift_crc"), g_("rep_aci"), g_("dtaci")
+    _arows.append([lab_, f"{SPREAD[('mmlu', a_)]:.3f}", f"{a1_['mean']:+.4f} ({a1_['se']:.4f})", f"{int(a1_['n_lower'])}/{int(a1_['n'])}", f"{b1_['mean']:+.4f}",
+                   f"{ps_['mean']:+.4f} ({ps_['se']:.4f})", f"{ps_['mean_inside']:+.4f} ({ps_['se_inside']:.4f}), {int(ps_['n_inside'])}/{int(ps_['n'])}",
+                   f"{kp_['mean']:+.4f} ({kp_['se']:.4f})", f"{dt_['mean']:+.4f} ({dt_['se']:.4f})"])
+    if key_ != "AOne":
+        realmac("mmlu", "Qwen2.5-1.5B-Instruct", "catblock", "Mmlu" + key_, asfx=f"_alpha{a_}", default=False)
+if _arows:
+    table("tab:mmlu_robust", "MMLU category blocks (24 orderings) at three target levels, all constants as declared. The spread is the range over the four categories of the $(1-\\alpha)$ quantile of the risk. "
+          "PromptShift-CRC minus the matched baseline in post-shift violation (standard error, number of orderings in which PromptShift-CRC is lower) and in mean threshold; "
+          "frontier gaps of PromptShift-CRC (over all orderings and over those inside the range of the window sweep), kernel weights with the update, and DtACI.",
+          ["Level", "Spread of target quantile", "PS $-$ matched post-shift", "PS lower in", "PS $-$ matched threshold", "Frontier gap PS", "PS, inside range", "Kernel + update", "DtACI"], _arows)
+
+_mrows = []
+for lab_, key_, nm_, fam_, a_ in [("RealToxicityPrompts, GPT-2", ("rtp_gpt2", 0.05), "rtp_gpt2_alpha0.05", "bandblock", 0.05), ("RealToxicityPrompts, GPT-2", ("rtp_gpt2", 0.1), "rtp", "bandblock", 0.1),
+                                  ("RealToxicityPrompts, GPT-2", ("rtp_gpt2", 0.2), "rtp_gpt2_alpha0.2", "bandblock", 0.2), ("RealToxicityPrompts, Qwen2.5-0.5B", ("rtp_qwen05b", 0.1), "rtp_qwen05b", "bandblock", 0.1),
+                                  ("MMLU", ("mmlu", 0.1), "mmlu", "catblock", 0.1), ("MMLU", ("mmlu", 0.2), "mmlu_Qwen2.5-1.5B-Instruct_alpha0.2", "catblock", 0.2),
+                                  ("MMLU", ("mmlu", 0.3), "mmlu_Qwen2.5-1.5B-Instruct_alpha0.3", "catblock", 0.3), ("TruthfulQA", ("truthfulqa", 0.1), "truthfulqa", "categoryblock", 0.1)]:
+    got_ = _pm_frontier(nm_, fam_)
+    if got_ is None:
+        continue
+    c_, f_ = got_
+    a1_ = c_[c_.metric == "post_shift_viol"].iloc[0]; ps_ = f_[f_.method == "promptshift_crc"].iloc[0]
+    _mrows.append([lab_, f"{a_}", f"{SPREAD[key_]:.3f}", f"{a1_['mean']:+.4f} ({a1_['se']:.4f})", f"{ps_['mean']:+.4f} ({ps_['se']:.4f})", f"{ps_['mean_inside']:+.4f} ({ps_['se_inside']:.4f})"])
+table("tab:mechanism", "How far the target quantile moves between regimes, and what the drift-aware components recover. The spread is the range over regimes with at least 30 prompts of the $(1-\\alpha)$ quantile of the risk "
+      "(a property of the data and the regime labels); the last three columns are PromptShift-CRC minus the matched baseline in post-shift violation, the frontier gap, and the frontier gap over the orderings inside the range of the window sweep.",
+      ["Setting", "Level $\\alpha$","Spread of target quantile", "PS $-$ matched post-shift", "Frontier gap PS", "PS, inside range"], _mrows)
+_sp = [float(r_[2]) for r_ in _mrows]
+_gp = [abs(float(c_.split(" ")[0])) for r_ in _mrows for c_ in (r_[4], r_[5])]
+macro("MechSpreadMin", f"{min(_sp):.3f}"); macro("MechSpreadMax", f"{max(_sp):.3f}"); macro("MechGapMax", f"{max(_gp):.4f}"); macro("MechRows", str(len(_mrows)))
+
+
+# ---------------------------------------------------------------- round 4, item E: L-ARC (Zecchin and Simeone, 2024)
+_lf = RES / "round4_larc_summary.csv"
+if _lf.exists():
+    la = pd.read_csv(_lf)
+    la = la[la.risk == "prob"]
+    LCFG = {"larc_eta1_ellDefault": "L-ARC, authors' defaults ($\\eta_1=1$, length scale $1$)", "larc_eta1_ellMatched": "L-ARC, $\\eta_1=1$, length scale matched to $h$",
+            "larc_eta0.1_ellDefault": "L-ARC, $\\eta_1=0.1$, length scale $1$", "larc_eta0.1_ellMatched": "L-ARC, $\\eta_1=0.1$, length scale matched to $h$"}
+    LFAM = [("synthetic", None, "synthetic (mean of the five streams)"), ("mmlu", "catblock", "MMLU, category blocks"), ("mmlu", "subjectblock", "MMLU, subject blocks"),
+            ("rtp_gpt2", "bandblock", "RealToxicityPrompts, GPT-2"), ("rtp_qwen05b", "bandblock", "RealToxicityPrompts, Qwen2.5-0.5B"), ("truthfulqa", "categoryblock", "TruthfulQA, category blocks")]
+
+    def _lrow(set_, fam_, cfg_):
+        g_ = la[(la.set == set_) & (la.config == cfg_)]
+        if fam_ is not None:
+            g_ = g_[g_.family == fam_]
+        n_ = len(g_)
+        out = dict(gap=g_.gap.mean(), se=np.sqrt((g_.gap_se ** 2).sum()) / n_, ps=g_.ps_gap.mean(), minus=g_.minus_ps.mean(), minus_se=np.sqrt((g_.minus_ps_se ** 2).sum()) / n_,
+                   thr=g_.thr_minus_ps.mean(), cov=g_.coverage.mean())
+        gi_ = g_[g_.n_inside > 0]
+        if fam_ is not None and len(gi_) == 1:
+            out.update(gin=float(gi_.gap_inside.iloc[0]), sin=float(gi_.gap_inside_se.iloc[0]) if not np.isnan(gi_.gap_inside_se.iloc[0]) else np.nan, nin=int(gi_.n_inside.iloc[0]), nall=int(g_.n.iloc[0]))
+        else:
+            out.update(gin=np.nan, sin=np.nan, nin=int(g_.n_inside.sum()), nall=int(g_.n.sum()))
+        return out
+
+    _rows = []
+    for set_, fam_, lab_ in LFAM:
+        r_ = _lrow(set_, fam_, "larc_eta1_ellDefault")
+        _rows.append([lab_, f"{r_['ps']:+.4f}", f"{r_['gap']:+.4f} ({r_['se']:.4f})", "--" if (np.isnan(r_['gin']) or r_['nin'] < 5) else f"{r_['gin']:+.4f} ({r_['sin']:.4f}), {r_['nin']} of {r_['nall']}",
+                      f"{r_['minus']:+.4f} ({r_['minus_se']:.4f})", f"{r_['thr']:+.4f}"])
+    table("tab:larc", "L-ARC with the authors' defaults against the Adaptive CRC frontier and against PromptShift-CRC (PS). Frontier gap: post-shift violation minus the window-sweep curve at the method's own mean threshold (negative is better), "
+          "with the gap over the orderings inside the range of the sweep where there are enough of them. Last two columns: L-ARC minus PromptShift-CRC in post-shift violation (standard error) and in mean threshold. "
+          "Synthetic: mean over the five streams of the 30-seed means. No coverage guarantee is claimed for L-ARC here.",
+          ["Setting", "Gap of PS", "Gap of L-ARC", "L-ARC, inside range", "L-ARC $-$ PS post-shift", "L-ARC $-$ PS threshold"], _rows)
+    _rows = []
+    for set_, fam_, lab_ in LFAM:
+        for cfg_, clab_ in LCFG.items():
+            r_ = _lrow(set_, fam_, cfg_)
+            _rows.append([lab_ if cfg_ == "larc_eta1_ellDefault" else "", clab_, f"{r_['cov']:.3f}", f"{r_['gap']:+.4f} ({r_['se']:.4f})", f"{r_['minus']:+.4f} ({r_['minus_se']:.4f})", f"{r_['thr']:+.4f}"])
+    table("tab:larc_all", "All four L-ARC configurations (the first of each group is the pre-declared primary one). Coverage, frontier gap and the difference from PromptShift-CRC, as in the previous table.",
+          ["Setting", "Configuration", "Coverage", "Frontier gap", "$-$ PS post-shift", "$-$ PS threshold"], _rows)
+    for set_, fam_, key_ in [("synthetic", None, "LarcSyn"), ("mmlu", "catblock", "LarcMmluCat"), ("mmlu", "subjectblock", "LarcMmluSubj"), ("rtp_gpt2", "bandblock", "LarcRtp"),
+                             ("rtp_qwen05b", "bandblock", "LarcRtpQ"), ("truthfulqa", "categoryblock", "LarcTqa")]:
+        r_ = _lrow(set_, fam_, "larc_eta1_ellDefault")
+        macro(f"{key_}Gap", f"{r_['gap']:+.4f}"); macro(f"{key_}GapSE", f"{r_['se']:.4f}"); macro(f"{key_}MinusPS", f"{r_['minus']:+.4f}"); macro(f"{key_}MinusPSSE", f"{r_['minus_se']:.4f}")
+        macro(f"{key_}Thr", f"{r_['thr']:+.4f}")
+        if not np.isnan(r_["gin"]):
+            macro(f"{key_}GapIn", f"{r_['gin']:+.4f}"); macro(f"{key_}GapInN", str(r_["nin"])); macro(f"{key_}GapAllN", str(r_["nall"]))
+    _s = la[(la.set == "synthetic") & (la.config == "larc_eta1_ellDefault")]
+    macro("LarcSynLo", f"{_s.gap.min():+.3f}"); macro("LarcSynHi", f"{_s.gap.max():+.3f}")
+    _s = la[(la.set == "synthetic") & (la.config == "larc_eta0.1_ellDefault")]
+    macro("LarcSynSmallLo", f"{_s.gap.min():+.2f}"); macro("LarcSynSmallHi", f"{_s.gap.max():+.2f}")
+    macro("LarcSynSmallCovLo", f"{_s.coverage.min():.2f}"); macro("LarcSynSmallCovHi", f"{_s.coverage.max():.2f}")
+    _s = la[(la.set == "synthetic") & (la.config == "larc_eta1_ellDefault")]
+    macro("LarcSynCovLo", f"{_s.coverage.min():.3f}"); macro("LarcSynCovHi", f"{_s.coverage.max():.3f}")
+
+
+# ---------------------------------------------------------------- round 4, item B: bandwidth sweep and recurring regimes
+_bf = RES / "round4_sweep_summary.csv"
+if _bf.exists():
+    bs = pd.read_csv(_bf)
+    BSET = [("bandwidth sweep", "rtp_gpt2", "RealToxicityPrompts, GPT-2: band blocks"), ("bandwidth sweep", "rtp_qwen05b", "RealToxicityPrompts, Qwen2.5-0.5B: band blocks"),
+            ("bandwidth sweep", "mmlu", "MMLU, $\\alpha=0.1$: category blocks"), ("recurring regimes", "rtp_gpt2", "RealToxicityPrompts, GPT-2: recurring regimes"),
+            ("recurring regimes", "rtp_qwen05b", "RealToxicityPrompts, Qwen2.5-0.5B: recurring regimes"), ("recurring regimes", "mmlu", "MMLU, $\\alpha=0.1$: recurring regimes"),
+            ("recurring regimes", "mmlu_alpha0.2", "MMLU, $\\alpha=0.2$: recurring regimes"), ("recurring regimes", "mmlu_alpha0.3", "MMLU, $\\alpha=0.3$: recurring regimes")]
+    MULT = [0.25, 0.5, 1.0, 2.0]
+    _rows = []
+    for des_, set_, lab_ in BSET:
+        g_ = bs[(bs.design == des_) & (bs.setting == set_)]
+        dt_ = g_[g_.method == "dtaci"].iloc[0]
+        for m_, mlab_ in [("promptshift_crc", "PromptShift-CRC"), ("rep_aci", "Kernel + update")]:
+            cells_ = []
+            for b_ in MULT:
+                x_ = g_[(g_.method == m_) & (np.isclose(g_.bw_mult, b_))].iloc[0]
+                cells_.append(f"{x_['gap']:+.4f} ({x_['gap_se']:.4f}) [{int(x_['n_inside'])}]")
+            _rows.append([lab_ if m_ == "promptshift_crc" else "", mlab_] + cells_ + ([f"{dt_['gap']:+.4f} ({dt_['gap_se']:.4f}) [{int(dt_['n_inside'])}]"] if m_ == "promptshift_crc" else [""]))
+    table("tab:bandwidth", "Frontier gap (post-shift violation minus the Adaptive CRC window-sweep curve at the method's own mean threshold; mean over 24 orderings with standard error) for kernel bandwidths $h/4$ to $2h$, "
+          "with the gate centre and slope rescaled with the bandwidth. In square brackets, the number of orderings (of 24) whose mean threshold lies inside the range of the window sweep; where it is small the gap is measured against the clipped end of the curve. "
+          "Top three settings: the declared band-block and category-block orderings. Others: orderings in which blocks of 128 prompts cycle through the regimes.",
+          ["Setting", "Rule", "$h/4$", "$h/2$", "$h$", "$2h$", "DtACI (no kernel)"], _rows)
+    KER = ["promptshift_crc", "rep_aci", "no_representation_weighting", "no_drift_gate", "no_recent_fallback"]
+    kc_ = bs[bs.method.isin(KER)].copy()
+    kc_["pass_"] = (kc_.gap < -0.005) & (kc_.gap.abs() > 2 * kc_.gap_se)
+    macro("BwCells", str(len(kc_))); macro("BwPass", str(int(kc_.pass_.sum()))); macro("BwPassInside", str(int((kc_.pass_ & (kc_.n_inside > 0)).sum())))
+    ps_ = bs[bs.method == "promptshift_crc"]
+    rec_ = ps_[ps_.design == "recurring regimes"]
+    macro("BwPSRecurMaxGap", f"{rec_.gap.abs().max():.4f}"); macro("BwPSRecurMaxMatched", f"{rec_.vs_matched.abs().max():.4f}")
+    sw_ = ps_[ps_.design == "bandwidth sweep"]
+    macro("BwPSSweepLo", f"{sw_.gap.min():+.4f}"); macro("BwPSSweepHi", f"{sw_.gap.max():+.4f}")
+    g1_ = bs[(bs.design == "bandwidth sweep") & (bs.setting == "rtp_gpt2")]
+    f_ = lambda m_, b_, col_: g1_[(g1_.method == m_) & np.isclose(g1_.bw_mult, b_)].iloc[0][col_]
+    macro("BwPSNeffQuarter", f"{f_('promptshift_crc', 0.25, 'mean_ess'):.0f}"); macro("BwPSNeffOne", f"{f_('promptshift_crc', 1.0, 'mean_ess'):.0f}")
+    macro("BwKUNeffQuarterRtp", f"{f_('rep_aci', 0.25, 'mean_ess'):.0f}"); macro("BwKUNeffOneRtp", f"{f_('rep_aci', 1.0, 'mean_ess'):.0f}")
+    macro("BwPassGap", f"{f_('rep_aci', 0.25, 'gap'):+.4f}"); macro("BwPassSE", f"{f_('rep_aci', 0.25, 'gap_se'):.4f}")
+    macro("BwPassVsMatched", f"{f_('rep_aci', 0.25, 'vs_matched'):+.4f}")
+    g2_ = bs[(bs.design == "bandwidth sweep") & (bs.setting == "mmlu")]
+    macro("BwKUNeffQuarterMmlu", f"{g2_[(g2_.method == 'rep_aci') & np.isclose(g2_.bw_mult, 0.25)].iloc[0]['mean_ess']:.0f}")
+    macro("BwKUNeffOneMmlu", f"{g2_[(g2_.method == 'rep_aci') & np.isclose(g2_.bw_mult, 1.0)].iloc[0]['mean_ess']:.0f}")
+    macro("BwKUQuarterMmluGap", f"{g2_[(g2_.method == 'rep_aci') & np.isclose(g2_.bw_mult, 0.25)].iloc[0]['gap']:+.4f}")
+    macro("BwKUQuarterMmluSE", f"{g2_[(g2_.method == 'rep_aci') & np.isclose(g2_.bw_mult, 0.25)].iloc[0]['gap_se']:.4f}")
+    g3_ = bs[(bs.design == "bandwidth sweep") & (bs.setting == "rtp_qwen05b")]
+    macro("BwKUQuarterQwenGap", f"{g3_[(g3_.method == 'rep_aci') & np.isclose(g3_.bw_mult, 0.25)].iloc[0]['gap']:+.4f}")
+    macro("BwKUQuarterQwenSE", f"{g3_[(g3_.method == 'rep_aci') & np.isclose(g3_.bw_mult, 0.25)].iloc[0]['gap_se']:.4f}")
+    for set_, key_ in [("rtp_gpt2", "GptTwo"), ("rtp_qwen05b", "Qwen")]:
+        x_ = bs[(bs.design == "recurring regimes") & (bs.setting == set_) & (bs.method == "dtaci")].iloc[0]
+        macro(f"BwDtaciRecur{key_}", f"{x_['gap']:+.4f}"); macro(f"BwDtaciRecur{key_}SE", f"{x_['gap_se']:.4f}"); macro(f"BwDtaciRecur{key_}In", str(int(x_['n_inside'])))
+    _raw = pd.read_csv(RES / "round4_sweep_rtp_gpt2.csv")
+    _rr = _raw[(_raw.method == "rep_aci") & np.isclose(_raw.bw_mult, 0.25)].mean_threshold.mean()
+    _sh = _raw[_raw.method == "adaptive_w32"].mean_threshold.mean(); _mt = _raw[_raw.method == "adaptive_crc_matched"].mean_threshold.mean()
+    macro("BwPassThr", f"{_rr:.3f}"); macro("BwShortThr", f"{_sh:.3f}"); macro("BwMatchedThr", f"{_mt:.3f}")
+    # the same criterion read over the orderings inside the range of the sweep (cells with at least five such orderings)
+    ki_ = kc_[kc_.n_inside >= 5].copy()
+    ki_["pass_in"] = (ki_.gap_inside < -0.005) & (ki_.gap_inside.abs() > 2 * ki_.gap_inside_se)
+    macro("BwInsideCells", str(len(ki_))); macro("BwInsidePass", str(int(ki_.pass_in.sum())))
+    for set_, key_ in [("rtp_gpt2", "LeadGptTwo"), ("rtp_qwen05b", "LeadQwen")]:
+        x_ = bs[(bs.design == "bandwidth sweep") & (bs.setting == set_) & (bs.method == "no_drift_gate") & np.isclose(bs.bw_mult, 0.25)].iloc[0]
+        macro(f"Bw{key_}In", f"{x_['gap_inside']:+.4f}"); macro(f"Bw{key_}InSE", f"{x_['gap_inside_se']:.4f}"); macro(f"Bw{key_}InN", str(int(x_['n_inside'])))
+        macro(f"Bw{key_}All", f"{x_['gap']:+.4f}"); macro(f"Bw{key_}AllSE", f"{x_['gap_se']:.4f}"); macro(f"Bw{key_}Matched", f"{x_['vs_matched']:+.4f}")
+    macro("BwLeadThr", f"{_raw[(_raw.method == 'no_drift_gate') & np.isclose(_raw.bw_mult, 0.25)].mean_threshold.mean():.3f}")
+
+
+# ---------------------------------------------------------------- how much the kernel at the declared bandwidth localises
+macro("PoolLen", str(3 * 256))
+for _nm, _f, _fam, _key in [("rtp_gpt2", "real_rtp_gpt2_runs.csv", "bandblock", "Rtp"), ("mmlu", "real_mmlu_Qwen2.5-1.5B-Instruct_runs.csv", "catblock", "Mmlu")]:
+    _r = pd.read_csv(RES / _f); _r["family"] = _r.stream.str.replace(r"_\d+$", "", regex=True)
+    _g = _r[(_r.family == _fam) & (_r.risk == "prob") & (_r.method == "rep_aci")]
+    macro(f"{_key}KernelNeff", str(int(round(_g.mean_ess.mean()))))
+_z = np.load(ROOT / "real_outputs" / "rtp_gpt2_emb_cache.npz")
+_e = _z["emb"][np.argsort(_z["idx"])]
+_rec = _jl("rtp_gpt2.jsonl").sort_values("idx")
+_pt = _rec.prompt_toxicity.fillna(0).values
+_band = np.searchsorted(np.quantile(_pt, [0.25, 0.5, 0.75]), _pt, side="right")
+_rng = np.random.default_rng(0)
+_sub = _e[_rng.permutation(len(_e))[:256]]
+_dd = np.linalg.norm(_sub[:, None] - _sub[None], axis=2)
+_h = float(np.median(_dd[np.triu_indices(256, 1)]))
+_top, _oth = _e[_band == 3], _e[_band != 3]
+_d2 = lambda a, b: np.maximum((a ** 2).sum(1)[:, None] + (b ** 2).sum(1)[None] - 2 * a @ b.T, 0.0)
+_ks = np.exp(-_d2(_top, _top) / _h ** 2); np.fill_diagonal(_ks, np.nan)
+_ko = np.exp(-_d2(_top, _oth) / _h ** 2)
+macro("RtpKernelRatio", f"{np.nanmean(_ks) / _ko.mean():.2f}")
+macro("RtpKernelBandwidth", f"{_h:.2f}")
+
+
+# ---------------------------------------------------------------- round 4, item C: does the computed drift predict violations?
+_tr = RES / "round4_trace_summary.csv"
+if _tr.exists():
+    import pickle as _pk
+    ts = pd.read_csv(_tr)
+    FAMLAB = {"rtp_gpt2": "RealToxicityPrompts, GPT-2 (bands)", "rtp_qwen05b": "RealToxicityPrompts, Qwen2.5-0.5B (bands)", "mmlu": "MMLU (categories)"}
+    _rows = []
+    def _cell(fam, grp, m, stat):
+        x = ts[(ts.family == fam) & (ts.group == grp) & (ts.method == m) & (ts.stat == stat)].iloc[0]
+        if stat == "jump_vs_postshift_spearman":
+            return f"{x['mean']:+.2f} [{x['lo']:+.2f}, {x['hi']:+.2f}]"
+        return f"{x['mean']:+.3f} ({x['se']:.3f})" if stat == "top_decile_minus_rest" else f"{x['mean']:.3f} ({x['se']:.3f})"
+    for fam, grp, lab in [("rtp_gpt2", "all", FAMLAB["rtp_gpt2"]), ("rtp_qwen05b", "all", FAMLAB["rtp_qwen05b"]), ("mmlu", "all", FAMLAB["mmlu"])] + \
+                         [("synthetic", s_, "synthetic: " + STREAM_LAB[s_]) for s_ in STREAM_LAB]:
+        _rows.append([lab] + [_cell(fam, grp, m, s) for m in ("ps", "matched") for s in ("top_decile_minus_rest", "auc", "jump_vs_postshift_spearman")])
+    table("tab:trace", "Does the pre-gate drift predict violations? For each stream the steps after the calibration prefix are split by whether the pre-gate drift is in the top decile of that stream. "
+          "Columns: violation rate in the top decile minus the rate elsewhere, AUC of the drift for the violation indicator (mean and standard error over orderings, or over seeds for the synthetic streams), "
+          "and the Spearman correlation across shifts between the jump in drift at the boundary and the post-shift violation, with a 95\% bootstrap interval. "
+          "Left: violations of PromptShift-CRC (the primary outcome). Right: violations of the matched baseline (robustness).",
+          ["Stream", "PS: top decile $-$ rest", "PS: AUC", "PS: jump vs post-shift", "Matched: top decile $-$ rest", "Matched: AUC", "Matched: jump vs post-shift"], _rows)
+    for fam, key in [("rtp_gpt2", "TraceRtp"), ("rtp_qwen05b", "TraceRtpQ"), ("mmlu", "TraceMmlu")]:
+        for stat, mt in [("top_decile_minus_rest", "Top"), ("auc", "Auc"), ("jump_vs_postshift_spearman", "Rho")]:
+            x = ts[(ts.family == fam) & (ts.method == "ps") & (ts.stat == stat)].iloc[0]
+            macro(f"{key}{mt}", f"{x['mean']:+.3f}" if mt == "Top" else (f"{x['mean']:.2f}" if mt == "Auc" else f"{x['mean']:+.2f}"))
+            if mt == "Top":
+                macro(f"{key}TopSE", f"{x['se']:.4f}")
+    _sy = ts[(ts.family == "synthetic") & (ts.method == "ps")]
+    for stat, mt, fmt in [("top_decile_minus_rest", "Top", "{:+.3f}"), ("auc", "Auc", "{:.2f}")]:
+        v = _sy[_sy.stat == stat]["mean"]
+        macro(f"TraceSyn{mt}Lo", fmt.format(v.min())); macro(f"TraceSyn{mt}Hi", fmt.format(v.max()))
+    _rho = ts[(ts.family != "synthetic") & (ts.method == "ps") & (ts.stat == "jump_vs_postshift_spearman")]["mean"]
+    macro("TraceRealRhoLo", f"{_rho.min():+.2f}"); macro("TraceRealRhoHi", f"{_rho.max():+.2f}")
+    # profile after a boundary: violation rate and pre-gate drift
+    for fam, key in [("rtp_gpt2", "TraceRtp"), ("mmlu", "TraceMmlu")]:
+        res_ = _pk.load((RES / f"round4_trace_{fam}.pkl").open("rb"))
+        first, later, dbef, daft = [], [], [], []
+        for _, tr_ in res_.items():
+            for s_ in tr_["shifts"]:
+                if s_ < 20 or s_ + 150 > len(tr_["dpre"]):
+                    continue
+                first.append(tr_["err_ps"][s_:s_ + 25].mean()); later.append(tr_["err_ps"][s_ + 25:s_ + 150].mean())
+                dbef.append(tr_["dpre"][s_ - 20:s_].mean()); daft.append(tr_["dpre"][s_:s_ + 25].mean())
+        macro(f"{key}ErrFirst", f"{np.mean(first):.3f}"); macro(f"{key}ErrLater", f"{np.mean(later):.3f}")
+        macro(f"{key}DBefore", f"{np.mean(dbef):.3f}"); macro(f"{key}DAfter", f"{np.mean(daft):.3f}")
+
+
 # ---------------------------------------------------------------- hyperparameter table (read from crc_lib, never retyped)
 import sys as _sys
 _sys.path.insert(0, str(ROOT / "scripts"))
@@ -394,6 +655,10 @@ for nm, cfg in [("Synthetic pilot", _C.CFG_PILOT), ("Synthetic ablation stream",
     hp_rows.append([nm, str(cfg["cal_start"]), str(cfg["window"]), str(cfg["recent"]), f"{cfg['bw']}", f"{cfg['gate_c']}", f"{cfg['gate_k']}", f"{cfg['gamma']}", "3W", f"{_C.gibbs_candes_bound(0.1, cfg['gamma'], _T):.3f}"])
 hp_rows.append(["MMLU", "256", "256", "128", "$h$ (median)", "$1.1h$", "$2.5/h$", "0.02", "3W", f"{_C.gibbs_candes_bound(0.1, 0.02, 2565 - 256):.3f}"])
 hp_rows.append(["RealToxicityPrompts (both generators)", "256", "256", "128", "$h$ (median)", "$1.1h$", "$2.5/h$", "0.02", "3W", f"{_C.gibbs_candes_bound(0.1, 0.02, 4000 - 256):.3f}"])
+hp_rows.append(["MMLU, $\\alpha=0.2$ and $0.3$", "256", "256", "128", "$h$ (median)", "$1.1h$", "$2.5/h$", "0.02", "3W",
+                f"{_C.gibbs_candes_bound(0.2, 0.02, 2565 - 256):.3f} and {_C.gibbs_candes_bound(0.3, 0.02, 2565 - 256):.3f}"])
+hp_rows.append(["RealToxicityPrompts (GPT-2), $\\alpha=0.05$ and $0.2$", "256", "256", "128", "$h$ (median)", "$1.1h$", "$2.5/h$", "0.02", "3W",
+                f"{_C.gibbs_candes_bound(0.05, 0.02, 4000 - 256):.3f} and {_C.gibbs_candes_bound(0.2, 0.02, 4000 - 256):.3f}"])
 hp_rows.append(["TruthfulQA", "100", "100", "50", "$h$ (median)", "$1.1h$", "$2.5/h$", "0.03", "3W", f"{_C.gibbs_candes_bound(0.1, 0.03, 817 - 100):.3f}"])
 for nm, cfg, w_ in [("Proxy: TruthfulQA fields", _C.CFG_TQA, "see text"), ("Proxy: SummEval", _C.CFG_SUMM, ""), ("Proxy: LongHalQA", _C.CFG_LHQA, ""), ("Proxy: RealToxicityPrompts fields", _C.CFG_RTP, "")]:
     _pb = pd.read_csv(RES / "phase_a_public_summary.csv")
@@ -401,12 +666,12 @@ for nm, cfg, w_ in [("Proxy: TruthfulQA fields", _C.CFG_TQA, "see text"), ("Prox
     _gb = _pb[(_pb.dataset == _key) & (_pb.method == "promptshift_crc")].gc_bound.iloc[0]
     hp_rows.append([nm, "rule", "rule", "rule", f"{cfg['bw']}", f"{cfg['gate_c']}", f"{cfg['gate_k']}", f"{cfg['gamma']}", "3W", f"{_gb:.3f}"])
 table("tab:hyper", "Settings used in every experiment. $W$ is the full window, ``recent'' the recency window, $h$ the kernel bandwidth, gate centre $c$ and slope $\kappa$ as in Section~\\ref{sec:method}, "
-      "$\gamma$ the step of the online update, and ``pool'' the length of the history used by the weighted rules. All use $\\alpha=0.1$. The synthetic constants are those of the earlier version of this work and were not changed; "
+      "$\gamma$ the step of the online update, and ``pool'' the length of the history used by the weighted rules. All use $\\alpha=0.1$ except the rows that give another level. The synthetic constants are those of the earlier version of this work and were not changed; "
       "the real-stream constants follow rules fixed in advance. ``Bound'' is the Theorem~\\ref{thm:longrun} bound on the distance between coverage and $0.90$. For the proxy streams the window lengths follow the rule in the released script (a fraction of the stream length with caps).",
       ["Experiment", "Prefix", "$W$", "Recent", "$h$", "Gate $c$", "Slope $\kappa$", "$\gamma$", "Pool", "Bound"], hp_rows)
 
 import re
-MAINTAB = {"tab:rtp_robust", "tab:lofo", "tab:synthetic", "tab:paired", "tab:frontier_syn", "tab:mmlu_catblock", "tab:rtp_bandblock", "tab:regret", "tab:frontier_mmlu", "tab:frontier_rtp"}
+MAINTAB = {"tab:lofo", "tab:synthetic", "tab:frontier_syn", "tab:regret", "tab:frontier_mmlu", "tab:frontier_rtp", "tab:mechanism", "tab:larc"}
 def _label(t_):
     return re.search(r"label[{]([^}]*)[}]", t_).group(1)
 NL = chr(10)

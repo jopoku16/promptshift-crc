@@ -74,9 +74,9 @@ def build(kind: str) -> Path:
     tex = tex.replace(r"\bibliography{references,new_refs}", r"\bibliography{references_v2,new_refs}")
     tex = re.sub(r"\\noindent\\textbf\{Keywords:\}.*?\n", "", tex)
     if kind == "anonymous":
-        tex = re.sub(r"The code, the recorded model outputs.*?Appendix~\\ref\{app:repro\} gives the commands\.",
-                     "The code, the recorded model outputs (risk scores, features and the identifiers needed to rebuild the streams), and the result tables are provided as supplementary material, and a public repository will be linked on acceptance. Question and prompt text from MMLU and TruthfulQA can be re-downloaded from the public datasets; the RealToxicityPrompts prompt and continuation text is withheld because it contains offensive language, and the generation script regenerates it. Sampled continuations are not bit-reproducible across hardware, so the released risk scores are canonical. Appendix~\\ref{app:repro} gives the commands.",
-                     tex, flags=re.S)
+        _anon = ("The code, the recorded model outputs (risk scores, features and the identifiers needed to rebuild the streams), and the result tables are provided as supplementary material, and a public repository will be linked on acceptance. Question and prompt text from MMLU and TruthfulQA can be re-downloaded from the public datasets; the RealToxicityPrompts prompt and continuation text is withheld because it contains offensive language, and the generation script regenerates it. Sampled continuations are not bit-reproducible across hardware, so the released risk scores are canonical. Appendix~\\ref{app:repro} gives the commands.")
+        # a function, not a string: in a re.sub template the backslash of \ref is read as an escape and turns \r into a carriage return
+        tex = re.sub(r"The code, the recorded model outputs.*?Appendix~\\ref\{app:repro\} gives the commands\.", lambda m: _anon, tex, flags=re.S)
         assert "jopoku16" not in tex, "repository URL leaked into the anonymous version"
     (out / "main.tex").write_text(tex, encoding="utf-8", newline="\n")
     for cmd in (["pdflatex", "-interaction=nonstopmode", "main.tex"], ["bibtex", "main"], ["pdflatex", "-interaction=nonstopmode", "main.tex"],

@@ -27,11 +27,14 @@ for (stream, seed), g in runs.groupby(["stream", "seed"]):
                 continue
             r = g[g.method == m].iloc[0]
             yf = np.interp(r.mean_threshold, x, y)
-            rows.append((stream, seed, m, ymet, r[ymet] - yf))
-d = pd.DataFrame(rows, columns=["stream", "seed", "method", "metric", "delta"])
+            rows.append((stream, seed, m, ymet, r[ymet] - yf, bool(x.min() <= r.mean_threshold <= x.max())))
+d = pd.DataFrame(rows, columns=["stream", "seed", "method", "metric", "delta", "inside"])
 out = (d.groupby(["stream", "method", "metric"]).delta
        .agg(mean="mean", sd=lambda v: v.std(ddof=1), n_below=lambda v: int((v < 0).sum()), n="count").reset_index())
 out["se"] = out["sd"] / np.sqrt(out["n"])
+ins = d[d.inside].groupby(["stream", "method", "metric"]).delta.agg(mean_inside="mean", n_inside="count").reset_index()
+out = out.merge(ins, how="left", on=["stream", "method", "metric"])
+out["n_inside"] = out["n_inside"].fillna(0).astype(int)
 out.to_csv(ROOT / "results" / f"phase_a_frontier{suffix}.csv", index=False)
 pd.set_option("display.width", 200)
 print(out[out.metric == "post_shift_viol"].round(4).to_string(index=False))

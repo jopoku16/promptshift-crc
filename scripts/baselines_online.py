@@ -1,4 +1,4 @@
-"""Stronger online baselines for the revision (Fable review, M1 and the 8/10 ladder).
+"""Stronger online baselines for the revision (referee review item M1).
 
 All return the same trace dictionary as crc_lib.run_stream, so crc_lib.summarise / local_metrics apply.
 
