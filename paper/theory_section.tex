@@ -1,0 +1,126 @@
+% Revised theory section for PromptShift-CRC (draft 2026-10-25, Phase B).
+% Replaces the old Theorem 1, Proposition 1 and Proposition 2. Every statement below is
+% either cited (Barber et al. 2023; Gibbs and Candes 2021) or proved in full.
+
+\section{Theory}\label{sec:theory}
+
+We use the notation of Section~\ref{sec:method}: weights $p_{t,s}$ that depend on the features $E_{1:t}$ only, $m_t=\max_{s<t}p_{t,s}$ and $n_{\mathrm{eff},t}=1/\sum_s p_{t,s}^2$.
+
+\paragraph{The threshold.}
+For a miscoverage level $\alpha_t$ the threshold is the weighted quantile of the past scores at level
+\[
+ \ell_t=(1-\alpha_t)(1+m_t),\qquad
+ q_t=\inf\Bigl\{x:\ \textstyle\sum_{s<t}p_{t,s}\mathbf 1\{R_s\le x\}\ge \ell_t\Bigr\},
+\]
+with the conventions $q_t=+\infty$ if $\ell_t>1$ and $q_t=-\infty$ if $\ell_t\le 0$.
+The factor $1+m_t$ is the finite-sample correction of Barber et al.\ (2023): it equals the
+quantile, at level $1-\alpha_t$, of $\sum_{s<t}\tilde w_{t,s}\delta_{R_s}+\tilde w_{t,t}\delta_{+\infty}$ with
+$\tilde w_{t,s}=p_{t,s}/(1+m_t)$ and $\tilde w_{t,t}=m_t/(1+m_t)$. For uniform weights on $n$ scores
+this is the usual split-conformal level $(1-\alpha)(1+1/n)$.
+The level follows the online rule $\alpha_{t+1}=\alpha_t+\gamma(\alpha-\mathrm{err}_t)$,
+$\mathrm{err}_t=\mathbf 1\{R_t>q_t\}$, $\alpha_1=\alpha$, \emph{with no projection}.
+
+\subsection{A conditional guarantee at a fixed level}
+
+\begin{assumption}[Conditional independence]\label{ass:ci}
+Given the features $E_{1:t}$, the scores $R_1,\dots,R_t$ are independent and
+$R_s\mid E_{1:t}\sim\kappa(E_s,\cdot)$ for a fixed Markov kernel $\kappa$ (the law of the risk of a prompt with feature $e$).
+Write $L_s=\kappa(E_s,\cdot)$.
+\end{assumption}
+
+Assumption~\ref{ass:ci} holds, for example, when prompts are independent draws and the model's
+randomness is independent across prompts. It does not require the laws $L_s$ to be equal.
+
+\begin{theorem}[Conditional coverage at a fixed level]\label{thm:cond}
+Fix $t$ and $\alpha\in(0,1)$ and let $q_t^{+}$ be the threshold above with $\alpha_t\equiv\alpha$.
+Under Assumption~\ref{ass:ci},
+\[
+ \mathbb P\bigl(R_t>q_t^{+}\ \big|\ E_{1:t}\bigr)\ \le\ \alpha+\frac{2}{1+m_t}\sum_{s<t}p_{t,s}\,
+ d_{\mathrm{TV}}(L_s,L_t)\ \le\ \alpha+2\sum_{s<t}p_{t,s}\,d_{\mathrm{TV}}(L_s,L_t).
+\]
+In particular, if $L_s=L_t$ for every $s$ with $p_{t,s}>0$, then $\mathbb P(R_t>q_t^{+}\mid E_{1:t})\le\alpha$.
+\end{theorem}
+
+\begin{proof}
+Condition on $E_{1:t}=e$; the weights $p_{t,s}$ are then fixed numbers. Apply Theorem~2 of
+Barber, Cand\`es, Ramdas and Tibshirani (2023) and the remark following it (their Section~4.1) that the same
+bound holds for nonexchangeable split conformal prediction, with the scores $R_s$ in place of the residuals and
+no fitted function. The sequence is $(R_1,\dots,R_t)$ with conditional joint law $\mathcal L(R_{1:t}\mid e)$;
+the fixed weights are $\hat w_s=p_{t,s}/m_t\in[0,1]$ for $s<t$ (their Section~3.1) and the test weight is $1$. Their normalised weights (their equation~(10)) are
+$\hat w_s/(\sum_{j<t}\hat w_j+1)=p_{t,s}/(1+m_t)=\tilde w_{t,s}$, and their threshold (their equation~(11)) is the quantile
+$q_t^{+}$ defined above. The theorem gives
+$\mathbb P(R_t\le q_t^{+}\mid e)\ge 1-\alpha-\sum_{s<t}\tilde w_{t,s}\,d_{\mathrm{TV}}(\mathbf R,\mathbf R^{s})$,
+where $\mathbf R=(R_1,\dots,R_t)$ and $\mathbf R^{s}$ is $\mathbf R$ with entries $s$ and $t$ swapped.
+Under Assumption~\ref{ass:ci}, $\mathbf R$ has product law $\bigotimes_j L_j$ and $\mathbf R^{s}$ has the product law with
+$L_s$ and $L_t$ exchanged, and these differ only in coordinates $s$ and $t$, so
+$d_{\mathrm{TV}}(\mathbf R,\mathbf R^{s})\le d_{\mathrm{TV}}(L_s\otimes L_t,\ L_t\otimes L_s)\le 2\,d_{\mathrm{TV}}(L_s,L_t)$
+(a product of two laws changes by at most the sum of the coordinate changes, by the triangle inequality).
+Substituting gives the first bound; the second uses $1/(1+m_t)\le 1$.
+\end{proof}
+
+Theorem~\ref{thm:cond} holds at a fixed level and does not apply to the data-dependent level $\alpha_t$ of the online rule;
+Theorem~\ref{thm:longrun} below covers that rule for every choice of weights, including weights that depend on past scores.
+
+\begin{lemma}[Size of the correction]\label{lem:m}
+$1/n_{\mathrm{eff},t}\le m_t\le n_{\mathrm{eff},t}^{-1/2}$.
+\end{lemma}
+\begin{proof}
+$\sum_s p_{t,s}^2\le m_t\sum_s p_{t,s}=m_t$ gives the first inequality, and $m_t^2\le\sum_s p_{t,s}^2$ gives the second.
+\end{proof}
+The correction factor in $\ell_t$ therefore lies between $1+1/n_{\mathrm{eff},t}$ and $1+n_{\mathrm{eff},t}^{-1/2}$: concentrated weights are
+charged in the level, not only in the variance of the weighted quantile.
+
+\begin{corollary}[Drift controls the penalty]\label{cor:drift}
+Suppose, in addition, $d_{\mathrm{TV}}\bigl(\mathcal L(R\mid E=e),\mathcal L(R\mid E=e')\bigr)\le \Lambda\|e-e'\|$ for all
+$e,e'$ in the support of the features. Then, for the final (post-gate) weights,
+\[
+ \mathbb P(R_t>q_t^{+}\mid E_{1:t})\le\alpha+\frac{2\Lambda}{1+m_t}\,D_t,\qquad
+ D_t=\sum_{s<t}p_{t,s}\,\|E_s-E_t\|.
+\]
+\end{corollary}
+
+The quantity $D_t$ is the \emph{prompt drift} of the paper, computed with the weights that are actually used
+to form the threshold (after the gate and recency mixing), so the diagnostic is the one that appears in the bound.
+The Lipschitz constant $\Lambda$ is a property of the data-generating process; it is not estimated by the method,
+and the bound is a statement about how the penalty scales, not a computable certificate.
+
+
+Corollary~\ref{cor:drift} and Lemma~\ref{lem:m} show the trade-off that any drift-aware rule faces: concentrating weight on prompts close to
+$E_t$ lowers $D_t$ and raises $m_t$ (lowers $n_{\mathrm{eff},t}$). Appendix~\ref{app:ess} gives the sampling error of the weighted quantile in the
+no-drift case, which grows as $n_{\mathrm{eff},t}^{-1/2}$. Neither bound orders the rules, so the comparison between rules is empirical
+(Section~\ref{sec:results}).
+
+\subsection{A long-run guarantee for the online update}
+
+\begin{theorem}[Long-run control, any weights]\label{thm:longrun}
+For every $T\ge1$, every score sequence $R_1,\dots,R_T\in[0,1]$ and every choice of weights,
+\[
+ \Bigl|\frac1T\sum_{t=1}^T\mathrm{err}_t-\alpha\Bigr|\ \le\ \frac{\max\{\alpha_1,1-\alpha_1\}+\gamma}{T\gamma}.
+\]
+\end{theorem}
+
+\begin{proof}
+We first show $\alpha_t\in[-\gamma,1+\gamma]$ for all $t$, by induction from $\alpha_1=\alpha\in(0,1)$.
+Suppose $\alpha_t\in[-\gamma,1+\gamma]$.
+If $\alpha_t<0$ then $\ell_t=(1-\alpha_t)(1+m_t)>1$, so $q_t=+\infty$, $\mathrm{err}_t=0$ and
+$\alpha_{t+1}=\alpha_t+\gamma\alpha\in(\alpha_t,\gamma\alpha)\subset[-\gamma,1+\gamma]$.
+If $\alpha_t>1$ then $\ell_t<0$, so $q_t=-\infty$, $\mathrm{err}_t=1$ and
+$\alpha_{t+1}=\alpha_t-\gamma(1-\alpha)\in[1-\gamma(1-\alpha),\alpha_t)\subset[-\gamma,1+\gamma]$.
+If $\alpha_t\in[0,1]$ then $\alpha_{t+1}\in[-\gamma(1-\alpha),\,1+\gamma\alpha]\subset[-\gamma,1+\gamma]$.
+Summing the update, $\alpha_{T+1}-\alpha_1=\gamma\sum_{t\le T}(\alpha-\mathrm{err}_t)$, so
+$\frac1T\sum_t\mathrm{err}_t-\alpha=(\alpha_1-\alpha_{T+1})/(T\gamma)$, and
+$\alpha_1-\alpha_{T+1}\le\alpha_1+\gamma$ and $\alpha_{T+1}-\alpha_1\le 1+\gamma-\alpha_1$, so
+$|\alpha_1-\alpha_{T+1}|\le\max\{\alpha_1,1-\alpha_1\}+\gamma$, which gives the bound.
+\end{proof}
+
+This is Proposition~4.1 of Gibbs and Cand\`es (2021) specialised to our update; we give the proof because the
+two conventions at the extremes ($\ell_t>1$ and $\ell_t<0$) are what the proof uses, and the correction factor
+$1+m_t$ leaves them unchanged. The bound is the same for every weighting scheme: \emph{long-run marginal
+coverage is a property of the update, not of PromptShift-CRC's weights}. The bound is $0.018$ to $0.024$ for the synthetic streams, $0.020$ for MMLU, $0.012$ for RealToxicityPrompts and $0.043$ for TruthfulQA.
+
+\begin{remark}[What gating can and cannot do]\label{rem:gate}
+Theorem~\ref{thm:longrun} gives every weighting scheme the same long-run bound, so long-run marginal coverage cannot distinguish schemes.
+By Theorem~\ref{thm:cond} and Lemma~\ref{lem:m}, a gate that moves weight toward recent or similar prompts can reduce the drift penalty
+$D_t$ while it reduces $n_{\mathrm{eff},t}$. We therefore do not claim that the gate or the representation weights improve
+risk control; whether they improve local validity or sharpness is measured, not assumed.
+\end{remark}

@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage[round,authoryear]{natbib}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+
+\input{numbers_generated}
+
+\title{Conformal Risk Control for Foundation Models Under Prompt Shift:\\ What Weighting Adds to the Online Update}
+\author{
+Jeffery Opoku\\
+The University of Texas Rio Grande Valley, Edinburg, TX, USA\\
+\texttt{jeffery.opoku01@utrgv.edu}
+\and
+David Banahene\\
+Florida International University, Miami, FL, USA\\
+\texttt{abanahene54@gmail.com}
+}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Prompts sent to a foundation model change over time, and a risk threshold calibrated on old prompts can stop being valid. We study PromptShift-CRC, a rule that weights past prompts by feature similarity, falls back to recent prompts when the current prompt is unlike the past, and updates its level online. We prove that the long-run violation rate is controlled by the update for any weights, so marginal coverage cannot separate weighting schemes. We give a conditional bound at a fixed level whose cost is a weighted total variation distance, bounded by a computable prompt-drift term up to an unknown Lipschitz constant. We propose a protocol for comparing such rules: a matched short-window baseline, a validity and sharpness frontier, 30-seed synthetic streams, and real-output streams ordered without using the model's output. On MMLU and TruthfulQA (Qwen2.5-1.5B) and RealToxicityPrompts (GPT-2, replicated with a second generator and classifier), every online method reaches the target. PromptShift-CRC stays within \PSfrontierMaxAbs{} of the Adaptive CRC frontier, avoids the worst window, and is matched or beaten by DtACI in most settings. Its practical value is that it performs like a mid-ranked window without having to choose one. Code, outputs and streams are released.
+\end{abstract}
+
+\noindent\textbf{Keywords:} conformal risk control; prompt shift; foundation models; online conformal prediction; uncertainty quantification.
+
+\input{sec_intro_related_method}
+
+\input{theory_section}
+
+\input{sec_protocol}
+
+\input{sec_results_synthetic}
+
+\input{sec_results_real}
+
+\input{tables_generated}
+
+\input{sec_discussion}
+
+\section*{Declaration of AI use}
+The authors used large language models (Anthropic's Claude models) to write and debug code, to run and check the experiments and proofs, and to draft and edit text. The study design, including the evaluation protocol, was developed with the model's assistance; the authors approved each design choice, reviewed every result and every proof, and take full responsibility for the content. No language model is an author. All numbers in the results sections are generated from the released result files by the released scripts.
+
+\section*{Data and code availability}
+The code, the recorded model outputs (risk scores, features and the identifiers needed to rebuild the streams), the result tables and the paper source are in the public repository \url{https://github.com/jopoku16/promptshift-crc}. Question and prompt text from MMLU and TruthfulQA can be re-downloaded from the public datasets; the RealToxicityPrompts prompt and continuation text is withheld from the release because it contains offensive language, and the generation script regenerates it. Sampled continuations are not bit-reproducible across hardware, so the released risk scores are canonical. Appendix~\ref{app:repro} gives the commands.
+
+\bibliographystyle{plainnat}
+\bibliography{references_v2,new_refs}
+
+\appendix
+\input{theory_appendix}
+
+\section{Settings and additional tables}\label{app:hyper}
+\input{tables_appendix_generated}
+
+\section{Proxy streams without model outputs}\label{app:proxy}
+Table~\ref{tab:proxy} reports streams built from fields of TruthfulQA, RealToxicityPrompts, SummEval and LongHalQA, as in the earlier version of this work. They contain no model outputs. The features are hand-built summaries of text, the risk is a score derived from annotations in the benchmark, and some orderings use a field linked to the outcome (for example the human consistency rating in SummEval). The two repeated tail segments of the earlier SummEval and LongHalQA streams have been removed. All online methods reach the target coverage to within the standard error. We draw no conclusion from these streams about the value of drift-aware weighting.
+
+\section{Reproduction}\label{app:repro}
+All experiments run on a CPU. The model outputs take about three hours (MMLU with a 1.5B-parameter model), forty minutes (TruthfulQA), an hour (RealToxicityPrompts with GPT-2) and about two hours (the Qwen2.5-0.5B replication); the stream analyses take one to two hours each on an eight-core machine. The commands are in the repository \texttt{README}: \texttt{gen\_mmlu\_outputs.py}, \texttt{gen\_truthfulqa\_outputs.py}, \texttt{gen\_rtp\_outputs.py}, then \texttt{run\_phase\_a\_synthetic.py}, \texttt{run\_phase\_a\_baselines.py}, \texttt{run\_real\_streams.py}, \texttt{analyze\_frontier.py}, \texttt{analyze\_real.py}, \texttt{make\_tables.py} and \texttt{make\_figures.py}. The tables and numbers in this paper are produced by \texttt{make\_tables.py} from the result files.
+
+\end{document}

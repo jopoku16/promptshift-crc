@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this code or the paper, please cite it."
+title: "Conformal Risk Control for Foundation Models Under Prompt Shift: What Weighting Adds to the Online Update"
+authors:
+  - family-names: Opoku
+    given-names: Jeffery
+    affiliation: "The University of Texas Rio Grande Valley"
+  - family-names: Banahene
+    given-names: David
+    affiliation: "Florida International University"
+year: 2026
+type: software
+license: MIT
+keywords:
+  - conformal risk control
+  - prompt shift
+  - foundation models
+  - online conformal prediction

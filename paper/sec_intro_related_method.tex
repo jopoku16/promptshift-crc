@@ -1,0 +1,61 @@
+% Sections 1 to 3 of the revised paper (draft 2026-10-25). No result numbers are typed here;
+% numbers enter through \input{numbers_generated} macros produced from the result CSVs.
+
+\section{Introduction}\label{sec:intro}
+
+A foundation model in use sees a stream of prompts that changes over time. New users arrive, topics change, policies change, and the model meets kinds of request that were rare when its risk was first measured. Conformal prediction and conformal risk control give a way to set a threshold on a risk score so that the long-run rate of violations stays near a chosen level $\alpha$, with no assumption on the model \citep{vovk2005algorithmic,angelopoulos2021gentle,angelopoulos2024conformal}. The guarantee is clearest when the calibration examples and the future examples are exchangeable, and a prompt stream with drift is the case where they are not.
+
+Two families of tools address this. Weighted conformal methods change the calibration distribution with importance weights \citep{tibshirani2019conformal,barber2023beyond}. Online methods adjust the target level after each observed violation \citep{gibbs2021adaptive,gibbs2024online,angelopoulos2023pid}. A natural proposal for foundation models is to combine them: weight past prompts by how similar they are to the current prompt, fall back to recent prompts when the current prompt looks unlike the past, and update the level online. We call this combination PromptShift-CRC. This paper asks what each part of such a method contributes, and it answers with theory, a fixed evaluation protocol, and experiments on real model outputs.
+
+\paragraph{What we find.}
+The answer is more modest than we expected, and we report it as found.
+\begin{enumerate}[label=(\roman*)]
+  \item With the online update used here, long-run risk control is a property of the update and not of the weights. For every weighting scheme the average violation rate is within $(\max\{\alpha,1-\alpha\}+\gamma)/(T\gamma)$ of $\alpha$ (Theorem~\ref{thm:longrun}), so marginal coverage cannot tell weighting schemes apart. In all of our experiments, every method that uses this update is within the bound, as Theorem~\ref{thm:longrun} requires; DtACI and quantile tracking, which use other updates, are within it as well.
+  \item The weights do matter for \emph{local} behaviour and for sharpness. We give a bound at a fixed level in which the cost of using calibration points from a different regime is a weighted sum of total variation distances (Theorem~\ref{thm:cond}) and, under a smoothness condition, a computable \emph{prompt drift} $D_t$ built from the weights actually used (Corollary~\ref{cor:drift}). This is a statement about how a penalty scales and not a certificate.
+  \item A fair comparison needs a baseline that uses a short calibration window. Adaptive conformal inference with a window equal to PromptShift-CRC's recent window is the baseline we call \emph{matched}. Against it, and against the validity and sharpness trade-off traced by sweeping its window, in our experiments PromptShift-CRC and its variants stay within a small margin of it: on average over streams, its post-shift violation differs from the Adaptive CRC curve at equal sharpness by at most \PSfrontierMaxAbs{} in every setting, and DtACI does as well or better in most. Its one advantage is that it performs like a mid-ranked window without a window having to be chosen (Section~\ref{sec:res-window}).
+  \item These results hold on synthetic streams with 30 seeds each and on streams built from real model outputs (MMLU and TruthfulQA with a 1.5-billion-parameter model, and RealToxicityPrompts with GPT-2 continuations scored by a public toxicity classifier, replicated with a second generator and classifier), ordered by variables that do not depend on the model's output.
+\end{enumerate}
+
+\paragraph{Contributions.}
+\begin{enumerate}[label=(\arabic*)]
+  \item A precise statement of the PromptShift-CRC rule, in which the weights, the drift gate and the recency fallback depend only on prompt features, with the finite-sample correction needed for a valid conditional bound (Section~\ref{sec:method}).
+  \item A conditional guarantee at a fixed level, a drift penalty computed from the final weights, and a long-run guarantee for the online rule that holds for any weights, with proofs (Section~\ref{sec:theory}).
+  \item An evaluation protocol that avoids the usual pitfalls: a matched-window baseline and a window sweep, a validity and sharpness frontier, multi-seed synthetic streams, orderings that do not use the outcome, real model outputs, and, for the real streams, settings fixed before the results were seen (Section~\ref{sec:protocol}).
+  \item An empirical answer, including where the drift-aware components help a little, where they do not, and what a practitioner should use (Section~\ref{sec:results}).
+\end{enumerate}
+
+\section{Related work}\label{sec:related}
+
+\paragraph{Conformal prediction and conformal risk control.}
+Split conformal prediction gives finite-sample coverage under exchangeability \citep{vovk2005algorithmic,angelopoulos2021gentle}. Conformal risk control extends it from coverage to any bounded monotone loss \citep{angelopoulos2024conformal}. Under covariate shift, weighting the calibration scores by the likelihood ratio restores coverage when the ratio is known \citep{tibshirani2019conformal}; \citet{barber2023beyond} show that fixed weights lose coverage by an amount governed by the total variation distance between the data distribution and a swapped version of it, which is the form of guarantee we use. \citet{angelopoulos2024conformal} also give a weighted version of conformal risk control under covariate shift, and \citet{gibbs2025conditional} obtain coverage conditional on features over a class of covariate shifts. \citet{cauchois2024robust} and \citet{podkopaev2022tracking} treat other kinds of shift.
+
+\paragraph{Online conformal methods.}
+Adaptive conformal inference updates the miscoverage level after each step and has a deterministic long-run bound for any data sequence \citep{gibbs2021adaptive}. Later work chooses the step size automatically or makes it decay, aggregates several step sizes, tracks the quantile directly, or adds integral and forecasting terms \citep{zaffran2022adaptive,gibbs2024online,bhatnagar2023improved,angelopoulos2024decaying,angelopoulos2023pid}. For risk control with losses beyond coverage, \citet{feldman2023online} give an online procedure, \citet{zecchin2024localized} make the control local by letting the threshold depend on features, and \citet{timans2025continuous} monitor risk violations under unknown shift. Our long-run result is the Gibbs and Cand\`es bound applied to our update, and we do not claim it as new.
+
+\paragraph{Weighting and localisation under shift.}
+Similarity weights, localised calibration and density-ratio weights are standard ways to adapt a calibration set to the current input \citep{guan2023localized,bastani2022practical,zecchin2025weighted}. For language models, \citet{mohri2024language} give conformal factuality guarantees, \citet{lin2026domain} weight calibration scores for domain shift, and \citet{hu2026cofact} estimate density ratios online to control hallucination under covariate shift. PromptShift-CRC is closest to these: it is a feature-based weighting rule with a recency fallback and an online level update. We do not claim a new weighting idea. Our contribution is a careful account of what such a rule can and cannot guarantee, and a protocol that compares it with strong, simple baselines.
+
+\paragraph{Language-model uncertainty and benchmarks.}
+Conformal ideas have been applied to multiple-choice question answering, generation and open-ended outputs \citep{kumar2023conformal,wang2025copu,noorani2025missingmass}. We use MMLU and TruthfulQA \citep{lin2021truthfulqa}. Earlier versions of this work also used streams built from RealToxicityPrompts, SummEval and LongHalQA \citep{gehman2020realtoxicityprompts,fabbri2020summeval,qiu2024longhalqa}. Those streams contain no model outputs and are reported in the appendix with that label. Evidence that prompts and model behaviour shift in practice comes from studies of code tasks, semantic rewording and non-deterministic drift \citep{li2024codeuncertainty,li2025pbss,nicholson2026nondeterministic}.
+
+\section{Setting and method}\label{sec:method}
+
+At step $t$ the system receives a prompt with feature vector $E_t\in\mathbb R^d$ (a sentence embedding of the prompt), a fixed model produces a response, and a risk score $R_t\in[0,1]$ is revealed after the decision. Large values mean more risk, for example $R_t=1-p_t$ where $p_t$ is the probability the model gave to the correct answer, or the 0/1 error. The aim is a threshold $q_t$, chosen from $E_{1:t}$ and $R_{1:t-1}$, so that the violation indicator $\mathrm{err}_t=\mathbf 1\{R_t>q_t\}$ has long-run mean close to $\alpha$ and, more usefully, has no long stretch with a much higher rate. With the indicator loss this is the conformal-prediction case of conformal risk control \citep{angelopoulos2024conformal} and our guarantees and experiments cover it. A threshold above a cut-off $\tau$ triggers an action such as abstaining, retrieving or asking for review. We write the fraction of such steps as the \emph{intervention rate}.
+
+\paragraph{Weights.}
+Given a pool of past steps $s\in\mathcal C_t=\{t-3W,\dots,t-1\}$ (with $W$ a window length), the method forms kernel weights from the distance of each past prompt to the current prompt,
+\[
+ \tilde s_{t,s}=\exp\{-\|E_s-E_t\|^2/h^2\}+\varepsilon,\qquad s_{t,s}=\tilde s_{t,s}\Big/\textstyle\sum_{j\in\mathcal C_t}\tilde s_{t,j},
+\]
+with bandwidth $h>0$ and a small floor $\varepsilon$ for numerical safety. The \emph{pre-gate drift} is the weighted mean distance
+$D^{\mathrm{pre}}_t=\sum_s s_{t,s}\|E_s-E_t\|$. A logistic gate $g_t=\{1+\exp[\kappa(D^{\mathrm{pre}}_t-c)]\}^{-1}\in(0,1)$ mixes the kernel weights with uniform weights on the most recent $R$ steps $\mathcal R_t\subseteq\mathcal C_t$:
+\[
+ p_{t,s}\ \propto\ g_t\,s_{t,s}+(1-g_t)\,\frac{\mathbf 1\{s\in\mathcal R_t\}}{|\mathcal R_t|}+\varepsilon,\qquad \textstyle\sum_s p_{t,s}=1.
+\]
+When the current prompt is close to many past prompts ($D^{\mathrm{pre}}_t$ small) the gate is near one and the rule borrows from all similar prompts. When it is far from the past, the rule leans on the most recent steps. The weights depend on prompt features only and never on scores. We report the \emph{post-gate drift} $D_t=\sum_s p_{t,s}\|E_s-E_t\|$ and the effective size $n_{\mathrm{eff},t}=1/\sum_s p_{t,s}^2$.
+
+\paragraph{Threshold and update.}
+The threshold is the quantile of the weighted past scores at level $\ell_t=(1-\alpha_t)(1+m_t)$, with $m_t=\max_s p_{t,s}$ and the conventions of Section~\ref{sec:theory}, and $\alpha_{t+1}=\alpha_t+\gamma(\alpha-\mathrm{err}_t)$ with $\alpha_1=\alpha$. The update has no projection. The factor $1+m_t$ is the Barber et al.\ correction and equals the usual $(1+1/n)$ for uniform weights.
+
+\paragraph{Baselines and variants.}
+\emph{Static}: the first calibration segment only. \emph{Rolling}: uniform weights on the last $W$ steps, fixed level. \emph{Adaptive CRC}: rolling window plus the online update, run with the full window $W$ and with a window equal to the recent window $R$ (\emph{matched}), and with a sweep of other windows. \emph{Representation-weighted}: kernel weights over a pool of $3W$ steps, with ($\texttt{rep\_aci}$) and without the update. \emph{PromptShift-CRC}: the full rule above. \emph{Ablations}: no kernel weights (uniform weights inside the gate), no gate (fixed mix $g_t=0.5$), no recency fallback ($g_t\equiv1$), and no online update. Three published online methods serve as stronger baselines: quantile tracking (the P term of conformal PID control, \citealp{angelopoulos2023pid}), DtACI \citep{gibbs2024online} with its recommended constants, and a density-ratio weighted rule in the spirit of \citet{lin2026domain,hu2026cofact} (simplified: a logistic regression separating the recent window from the older pool, refit every 25 steps). We did not reimplement the localised risk control of \citet{zecchin2024localized}.

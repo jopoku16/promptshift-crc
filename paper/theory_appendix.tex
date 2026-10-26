@@ -1,0 +1,21 @@
+% Appendix: weighted quantile uncertainty (no-drift case)
+\section{Weighted quantile uncertainty}\label{app:ess}
+\begin{proposition}[Weighted quantile uncertainty]\label{prop:ess}
+Conditional on $E_{1:t}$, suppose $R_1,\dots,R_{t-1}$ are independent with a common continuous distribution function $F$ (the no-drift case). For any
+$\eta\in(0,1)$ and integer $M\ge 1$, with probability at least $1-\eta$,
+\[
+ \sup_{x}\Bigl|\sum_{s<t}p_{t,s}\mathbf 1\{R_s\le x\}-F(x)\Bigr|\ \le\ \sqrt{\frac{\log(2M/\eta)}{2\,n_{\mathrm{eff},t}}}+\frac1M .
+\]
+\end{proposition}
+
+\begin{proof}
+Let $u_j=j/M$ and $x_j=F^{-1}(u_j)$ for $j=1,\dots,M-1$, and $x_0=-\infty$, $x_M=+\infty$; by continuity
+$F(x_j)=u_j$. Let $\hat F(x)=\sum_s p_{t,s}\mathbf 1\{R_s\le x\}$. For fixed $x_j$, $\hat F(x_j)-F(x_j)$ is a
+sum of independent terms $p_{t,s}(\mathbf 1\{R_s\le x_j\}-F(x_j))$, each in an interval of length $p_{t,s}$, so Hoeffding's
+inequality gives $\mathbb P(|\hat F(x_j)-F(x_j)|>\varepsilon)\le 2\exp(-2\varepsilon^2/\sum_s p_{t,s}^2)=2\exp(-2\varepsilon^2n_{\mathrm{eff},t})$.
+A union bound over $j=1,\dots,M-1$ with $\varepsilon=\sqrt{\log(2M/\eta)/(2n_{\mathrm{eff},t})}$ makes all of them hold with probability at least $1-\eta$.
+Because $F$ is continuous, almost surely no $R_s$ equals any $x_j$, so $\hat F(x_j^-)=\hat F(x_j)$. For $x\in[x_j,x_{j+1})$,
+monotonicity gives $\hat F(x)-F(x)\le\hat F(x_{j+1}^-)-F(x_j)\le \varepsilon+F(x_{j+1})-F(x_j)=\varepsilon+1/M$ and
+$\hat F(x)-F(x)\ge \hat F(x_j)-F(x_{j+1})\ge-\varepsilon-1/M$.
+\end{proof}
+

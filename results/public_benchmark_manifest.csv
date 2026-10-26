@@ -1,0 +1,6 @@
+task,public_dataset,risk_score,shift_axis,paper_role
+truthfulness_qa,TruthfulQA,incorrect_or_untruthful_answer,"question category, e.g. health, law, finance, politics",question answering and hallucination-sensitive risk
+toxicity_safety,RealToxicityPrompts,toxicity score or toxicity violation indicator,"prompt toxicity, topic, demographic or style clusters",safety and user-intent shift
+summarization_factuality,SummEval,"one minus human consistency score, with relevance/coherence penalties",source domain and document type,summarization factuality under source-domain shift
+summarization_factuality_extensions,G-Eval/SelfCheckGPT-compatible summarization outputs,judge-based factuality loss or self-consistency hallucination score,"source domain, document type, and evaluator/model family",model-output factuality extensions beyond SummEval
+long_context_hallucination,LongHalQA / QHQK/description_hall_binary_v3,binary hallucination mismatch label with length/detail penalties,"description length, visual detail, and hallucination prevalence",hallucination-sensitive long-context generation

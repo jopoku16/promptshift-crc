@@ -1,0 +1,9 @@
+numpy
+scipy
+pandas
+scikit-learn
+matplotlib
+torch
+transformers
+datasets
+sentence-transformers

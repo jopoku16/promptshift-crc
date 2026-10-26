@@ -1,0 +1,6 @@
+source,method,coverage,mean_threshold,mean_effective_calibration_size,mean_drift,absolute_coverage_error
+huggingface_allenai_real_toxicity_prompts,static_crc,0.8905555555555555,0.17925991179999995,599.9999999999999,1.0119269411554432,0.009444444444444478
+huggingface_allenai_real_toxicity_prompts,rolling_crc,0.8963888888888889,0.1834928746918333,500.0,1.0071564944292475,0.0036111111111111205
+huggingface_allenai_real_toxicity_prompts,adaptive_crc,0.9,0.1870253014978611,500.0,1.0071564944292475,0.0
+huggingface_allenai_real_toxicity_prompts,representation_weighted_crc,0.8969444444444444,0.18277099819156112,548.6690476204975,0.5627356778639007,0.003055555555555589
+huggingface_allenai_real_toxicity_prompts,promptshift_crc,0.9,0.18538665691671663,618.0036781906873,0.5627356778639007,0.0

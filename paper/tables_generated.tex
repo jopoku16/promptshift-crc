@@ -1,0 +1,231 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Synthetic streams, mean over five generators of the 30-seed means (and mean seed-to-seed sd). Every online method has coverage near $0.90$ because of the update; local violation and sharpness separate the methods.}
+\label{tab:synthetic}
+\begin{tabular}{lrrrr}
+\toprule
+Method & Coverage & Post-shift violation & Max local violation & Mean threshold \\
+\midrule
+Static & 0.334 $\pm$ 0.012 & 0.802 $\pm$ 0.016 & 0.986 & 0.450 \\
+Rolling & 0.854 $\pm$ 0.005 & 0.311 $\pm$ 0.015 & 0.524 & 0.758 \\
+Adaptive CRC, window $W$ & 0.901 $\pm$ 0.001 & 0.095 $\pm$ 0.005 & 0.201 & 0.764 \\
+Adaptive CRC, matched window & 0.901 $\pm$ 0.001 & 0.088 $\pm$ 0.006 & 0.188 & 0.764 \\
+Kernel weights + update & 0.903 $\pm$ 0.001 & 0.098 $\pm$ 0.005 & 0.189 & 0.734 \\
+Kernel weights, no update & 0.860 $\pm$ 0.007 & 0.295 $\pm$ 0.019 & 0.527 & 0.737 \\
+PromptShift-CRC & 0.901 $\pm$ 0.001 & 0.090 $\pm$ 0.005 & 0.186 & 0.760 \\
+Gate + recency only & 0.901 $\pm$ 0.001 & 0.088 $\pm$ 0.006 & 0.187 & 0.764 \\
+No gate (fixed mix) & 0.902 $\pm$ 0.001 & 0.095 $\pm$ 0.005 & 0.186 & 0.751 \\
+No recency fallback & 0.903 $\pm$ 0.001 & 0.098 $\pm$ 0.005 & 0.189 & 0.734 \\
+No online update & 0.879 $\pm$ 0.004 & 0.214 $\pm$ 0.015 & 0.387 & 0.762 \\
+DtACI & 0.909 $\pm$ 0.003 & 0.079 $\pm$ 0.007 & 0.158 & 0.741 \\
+Density-ratio weights & 0.902 $\pm$ 0.001 & 0.091 $\pm$ 0.006 & 0.198 & 0.771 \\
+Quantile tracking & 0.891 $\pm$ 0.001 & 0.138 $\pm$ 0.005 & 0.231 & 0.755 \\
+\bottomrule
+\end{tabular}
+\par\smallskip{\footnotesize Post-shift violation is the miss rate over the 150 steps after each regime boundary (target $0.10$).}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{PromptShift-CRC minus a comparator, paired by seed. Negative means PromptShift-CRC is lower (better for violation; sharper for threshold).}
+\label{tab:paired}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Stream & Comparator & $\Delta$ post-shift & SE & PS lower in & $\Delta$ threshold & PS lower in \\
+\midrule
+pilot & matched Adaptive CRC & +0.0016 & 0.0004 & 2/30 & -0.0043 & 30/30 \\
+ & no gate & -0.0026 & 0.0004 & 23/30 & +0.0059 & 1/30 \\
+ & gate + recency only & +0.0013 & 0.0004 & 4/30 & -0.0038 & 30/30 \\
+ & DtACI & +0.0054 & 0.0010 & 4/30 & +0.0121 & 0/30 \\
+ablation stream & matched Adaptive CRC & +0.0018 & 0.0005 & 3/30 & -0.0031 & 30/30 \\
+ & no gate & -0.0039 & 0.0005 & 26/30 & +0.0026 & 3/30 \\
+ & gate + recency only & +0.0013 & 0.0004 & 3/30 & -0.0027 & 30/30 \\
+ & DtACI & +0.0079 & 0.0011 & 2/30 & +0.0189 & 0/30 \\
+QA topic shift & matched Adaptive CRC & +0.0027 & 0.0004 & 0/30 & -0.0042 & 30/30 \\
+ & no gate & -0.0045 & 0.0007 & 24/30 & +0.0091 & 0/30 \\
+ & gate + recency only & +0.0028 & 0.0004 & 1/30 & -0.0042 & 30/30 \\
+ & DtACI & +0.0144 & 0.0014 & 0/30 & +0.0133 & 0/30 \\
+summarization shift & matched Adaptive CRC & +0.0030 & 0.0005 & 2/30 & -0.0042 & 30/30 \\
+ & no gate & -0.0052 & 0.0004 & 29/30 & +0.0093 & 0/30 \\
+ & gate + recency only & +0.0030 & 0.0004 & 1/30 & -0.0037 & 29/30 \\
+ & DtACI & +0.0158 & 0.0011 & 0/30 & +0.0203 & 0/30 \\
+safety-intent shift & matched Adaptive CRC & +0.0032 & 0.0004 & 0/30 & -0.0058 & 30/30 \\
+ & no gate & -0.0081 & 0.0005 & 30/30 & +0.0162 & 0/30 \\
+ & gate + recency only & +0.0032 & 0.0004 & 0/30 & -0.0054 & 30/30 \\
+ & DtACI & +0.0133 & 0.0014 & 2/30 & +0.0297 & 0/30 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Frontier gap on the synthetic streams: post-shift violation minus the Adaptive-CRC window-sweep curve interpolated at the method's own mean threshold, mean over seeds with standard error. Negative means better than Adaptive CRC at the same sharpness.}
+\label{tab:frontier_syn}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Stream & PromptShift-CRC & Gate + recency only & Kernel + update & DtACI & Density ratio \\
+\midrule
+pilot & +0.0015 (0.0011) & -0.0023 (0.0009) & +0.0111 (0.0010) & -0.0032 (0.0013) & -0.0002 (0.0012) \\
+ablation stream & -0.0013 (0.0008) & -0.0033 (0.0008) & +0.0113 (0.0010) & -0.0015 (0.0014) & -0.0030 (0.0013) \\
+QA topic shift & +0.0015 (0.0011) & -0.0032 (0.0010) & +0.0179 (0.0013) & -0.0043 (0.0016) & +0.0028 (0.0016) \\
+summarization shift & -0.0049 (0.0019) & -0.0054 (0.0011) & +0.0212 (0.0011) & -0.0050 (0.0013) & +0.0045 (0.0017) \\
+safety-intent shift & -0.0055 (0.0014) & -0.0049 (0.0014) & +0.0218 (0.0009) & -0.0037 (0.0014) & -0.0010 (0.0019) \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{MMLU with Qwen2.5-1.5B-Instruct, category blocks (24 streams; mean and sd over streams). Risk: one minus the probability of the correct answer.}
+\label{tab:mmlu_catblock}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Method & Coverage & Post-shift violation & Max local violation & Mean threshold & Intervention rate \\
+\midrule
+Static & 0.900 $\pm$ 0.022 & 0.097 $\pm$ 0.026 & 0.183 & 0.964 & 1.000 \\
+Rolling & 0.903 $\pm$ 0.002 & 0.091 $\pm$ 0.011 & 0.167 & 0.966 & 1.000 \\
+Adaptive CRC, window $W$ & 0.900 $\pm$ 0.001 & 0.097 $\pm$ 0.009 & 0.146 & 0.961 & 1.000 \\
+Adaptive CRC, matched window & 0.900 $\pm$ 0.001 & 0.099 $\pm$ 0.009 & 0.148 & 0.960 & 1.000 \\
+Kernel weights + update & 0.900 $\pm$ 0.001 & 0.097 $\pm$ 0.009 & 0.146 & 0.961 & 1.000 \\
+Kernel weights, no update & 0.902 $\pm$ 0.005 & 0.094 $\pm$ 0.011 & 0.177 & 0.965 & 1.000 \\
+PromptShift-CRC & 0.900 $\pm$ 0.001 & 0.098 $\pm$ 0.009 & 0.146 & 0.961 & 1.000 \\
+Gate + recency only & 0.900 $\pm$ 0.001 & 0.098 $\pm$ 0.009 & 0.146 & 0.961 & 1.000 \\
+No gate (fixed mix) & 0.900 $\pm$ 0.001 & 0.098 $\pm$ 0.009 & 0.146 & 0.961 & 1.000 \\
+No recency fallback & 0.900 $\pm$ 0.001 & 0.097 $\pm$ 0.009 & 0.146 & 0.961 & 1.000 \\
+No online update & 0.903 $\pm$ 0.003 & 0.093 $\pm$ 0.012 & 0.165 & 0.966 & 1.000 \\
+DtACI & 0.907 $\pm$ 0.002 & 0.090 $\pm$ 0.010 & 0.150 & 0.966 & 1.000 \\
+Density-ratio weights & 0.900 $\pm$ 0.001 & 0.097 $\pm$ 0.008 & 0.144 & 0.961 & 1.000 \\
+Quantile tracking & 0.900 $\pm$ 0.001 & 0.098 $\pm$ 0.006 & 0.137 & 0.960 & 1.000 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{RealToxicityPrompts with GPT-2 continuations, prompt-toxicity bands in blocks (24 streams; mean and sd over streams). Risk: toxicity probability of the continuation.}
+\label{tab:rtp_bandblock}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Method & Coverage & Post-shift violation & Max local violation & Mean threshold & Intervention rate \\
+\midrule
+Static & 0.867 $\pm$ 0.081 & 0.144 $\pm$ 0.102 & 0.390 & 0.184 & 0.250 \\
+Rolling & 0.901 $\pm$ 0.005 & 0.114 $\pm$ 0.028 & 0.297 & 0.172 & 0.204 \\
+Adaptive CRC, window $W$ & 0.900 $\pm$ 0.000 & 0.095 $\pm$ 0.011 & 0.208 & 0.184 & 0.180 \\
+Adaptive CRC, matched window & 0.900 $\pm$ 0.000 & 0.100 $\pm$ 0.008 & 0.207 & 0.186 & 0.174 \\
+Kernel weights + update & 0.900 $\pm$ 0.000 & 0.093 $\pm$ 0.012 & 0.206 & 0.183 & 0.179 \\
+Kernel weights, no update & 0.898 $\pm$ 0.012 & 0.131 $\pm$ 0.037 & 0.348 & 0.155 & 0.155 \\
+PromptShift-CRC & 0.900 $\pm$ 0.000 & 0.095 $\pm$ 0.010 & 0.204 & 0.185 & 0.179 \\
+Gate + recency only & 0.900 $\pm$ 0.000 & 0.095 $\pm$ 0.010 & 0.204 & 0.185 & 0.178 \\
+No gate (fixed mix) & 0.900 $\pm$ 0.000 & 0.096 $\pm$ 0.009 & 0.206 & 0.183 & 0.175 \\
+No recency fallback & 0.900 $\pm$ 0.000 & 0.093 $\pm$ 0.012 & 0.206 & 0.183 & 0.179 \\
+No online update & 0.904 $\pm$ 0.008 & 0.112 $\pm$ 0.027 & 0.290 & 0.161 & 0.164 \\
+DtACI & 0.906 $\pm$ 0.001 & 0.097 $\pm$ 0.011 & 0.217 & 0.194 & 0.199 \\
+Density-ratio weights & 0.900 $\pm$ 0.000 & 0.095 $\pm$ 0.010 & 0.204 & 0.183 & 0.177 \\
+Quantile tracking & 0.900 $\pm$ 0.005 & 0.099 $\pm$ 0.017 & 0.244 & 0.167 & 0.151 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Frontier gap on MMLU streams (post-shift violation minus the Adaptive-CRC window-sweep curve at the same mean threshold; mean over orderings with standard error). Negative is better than Adaptive CRC.}
+\label{tab:frontier_mmlu}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Ordering & PromptShift-CRC & Gate + recency only & Kernel + update & DtACI & Density ratio \\
+\midrule
+cat blocks & -0.0007 (0.0006) & -0.0007 (0.0006) & -0.0007 (0.0006) & -0.0084 (0.0012) & -0.0006 (0.0006) \\
+subject blocks & -0.0001 (0.0001) & -0.0001 (0.0001) & +0.0002 (0.0001) & -0.0060 (0.0006) & +0.0001 (0.0002) \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Frontier gap on RTP streams (post-shift violation minus the Adaptive-CRC window-sweep curve at the same mean threshold; mean over orderings with standard error). Negative is better than Adaptive CRC.}
+\label{tab:frontier_rtp}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Ordering & PromptShift-CRC & Gate + recency only & Kernel + update & DtACI & Density ratio \\
+\midrule
+band blocks & -0.0010 (0.0010) & -0.0007 (0.0011) & -0.0027 (0.0012) & -0.0030 (0.0015) & +0.0006 (0.0008) \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Robustness to the window choice. For each stream, Adaptive CRC is run with a sweep of windows. PromptShift-CRC (PS) has no window to choose. Entries are means over streams of post-shift violation: PS minus the best window in hindsight, the spread of the window family (worst minus best), PS minus the worst window, and the rank of PS among the window family and PS (1 = lowest violation). The best window in hindsight is selected on the same data, so the first column is biased in PS's disfavour.}
+\label{tab:regret}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Setting & Streams & PS $-$ best & Spread & PS $-$ worst & Rank of PS \\
+\midrule
+synthetic (5 streams x 30 seeds) & 150 & +0.0124 & 0.0267 & -0.0143 & 3.9 of 6 \\
+MMLU, category blocks & 24 & +0.0039 & 0.0100 & -0.0061 & 3.2 of 6 \\
+MMLU, subject blocks & 20 & +0.0007 & 0.0020 & -0.0013 & 3.2 of 6 \\
+RealToxicityPrompts, toxicity bands & 24 & +0.0046 & 0.0144 & -0.0097 & 3.0 of 6 \\
+TruthfulQA, category blocks & 20 & +0.0051 & 0.0090 & -0.0038 & 3.9 of 6 \\
+RealToxicityPrompts replication (Qwen2.5-0.5B) & 24 & +0.0043 & 0.0149 & -0.0106 & 3.0 of 6 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Choosing the Adaptive CRC window without looking at the held-out family. For each family of streams, the window (position in the five-window sweep, short to long) with the best mean rank over the other four families is chosen; the entry is PromptShift-CRC's post-shift violation minus that window's on the held-out family (negative: PromptShift-CRC is lower). The last two columns give the window that is best on the held-out family itself and PromptShift-CRC's gap to that window in hindsight.}
+\label{tab:lofo}
+\begin{tabular}{lrrrr}
+\toprule
+Held-out family & Window chosen elsewhere & PS $-$ chosen & Best here & PS $-$ best here \\
+\midrule
+synthetic & 4 of 5 & -0.0030 & 1 of 5 & +0.0124 \\
+MMLU categories & 2 of 5 & -0.0019 & 4 of 5 & +0.0039 \\
+MMLU subjects & 2 of 5 & -0.0006 & 4 of 5 & +0.0007 \\
+RTP bands & 2 of 5 & -0.0048 & 5 of 5 & +0.0046 \\
+TruthfulQA categories & 4 of 5 & +0.0014 & 2 of 5 & +0.0051 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{RealToxicityPrompts across generators, classifiers and target levels (24 band orderings each). PromptShift-CRC minus the matched baseline, post-shift violation with standard error and number of orderings in which PromptShift-CRC is lower, and mean threshold; frontier gaps of PromptShift-CRC and DtACI.}
+\label{tab:rtp_robust}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Configuration & PS $-$ matched post-shift & PS lower in & PS $-$ matched threshold & PS lower in & Frontier gap PS & Frontier gap DtACI \\
+\midrule
+GPT-2, toxic-bert, $\alpha=0.1$ (main) & -0.0052 (0.0011) & 19/24 & -0.0011 & 15/24 & -0.0010 (0.0010) & -0.0030 (0.0015) \\
+Qwen2.5-0.5B, unbiased-toxic-roberta, $\alpha=0.1$ (replication) & -0.0050 (0.0015) & 16/24 & -0.0053 & 20/24 & -0.0003 (0.0007) & -0.0019 (0.0015) \\
+GPT-2, toxic-bert, $\alpha=0.05$ & -0.0039 (0.0009) & 19/24 & -0.0166 & 23/24 & -0.0010 (0.0009) & -0.0037 (0.0012) \\
+GPT-2, toxic-bert, $\alpha=0.2$ & -0.0031 (0.0019) & 13/24 & -0.0025 & 21/24 & -0.0017 (0.0015) & +0.0027 (0.0019) \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
