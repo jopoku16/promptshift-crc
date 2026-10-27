@@ -25,6 +25,7 @@ PREAMBLE = r"""\documentclass{article}
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{graphicx}
+\usepackage{float}
 \usepackage{microtype}
 \usepackage{url}
 

@@ -5,6 +5,7 @@
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{graphicx}
+\usepackage{float}
 \usepackage[hidelinks]{hyperref}
 \usepackage[round,authoryear]{natbib}
 
@@ -69,13 +70,13 @@ The code, the recorded model outputs (risk scores, features and the identifiers 
 \appendix
 \input{theory_appendix}
 
-\section{Settings and additional tables}\label{app:hyper}
-\input{tables_appendix_generated}
-
 \section{Proxy streams without model outputs}\label{app:proxy}
 Table~\ref{tab:proxy} reports streams built from fields of TruthfulQA, RealToxicityPrompts, SummEval and LongHalQA, as in the earlier version of this work. They contain no model outputs. The features are hand-built summaries of text, the risk is a score derived from annotations in the benchmark, and some orderings use a field linked to the outcome (for example the human consistency rating in SummEval). The two repeated tail segments of the earlier SummEval and LongHalQA streams have been removed. All online methods reach the target coverage to within the standard error. We draw no conclusion from these streams about the value of drift-aware weighting.
 
 \section{Reproduction}\label{app:repro}
 All experiments run on a CPU. The model outputs take about three hours (MMLU with a 1.5B-parameter model), forty minutes (TruthfulQA), an hour (RealToxicityPrompts with GPT-2) and about two hours (the Qwen2.5-0.5B replication); the stream analyses take one to two hours each on an eight-core machine. The commands are in the repository \texttt{README}: \texttt{gen\_mmlu\_outputs.py}, \texttt{gen\_truthfulqa\_outputs.py}, \texttt{gen\_rtp\_outputs.py}, then \texttt{run\_phase\_a\_synthetic.py}, \texttt{run\_phase\_a\_baselines.py}, \texttt{run\_real\_streams.py}, \texttt{analyze\_frontier.py}, \texttt{analyze\_real.py}, \texttt{make\_tables.py} and \texttt{make\_figures.py}. The tables and numbers in this paper are produced by \texttt{make\_tables.py} from the result files.
+
+\section{Settings and additional tables}\label{app:hyper}
+\input{tables_appendix_generated}
 
 \end{document}

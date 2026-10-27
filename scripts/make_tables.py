@@ -676,6 +676,6 @@ def _label(t_):
     return re.search(r"label[{]([^}]*)[}]", t_).group(1)
 NL = chr(10)
 (ROOT / "tables_generated.tex").write_text(NL.join(t_ for t_ in out_tab if _label(t_) in MAINTAB), encoding="utf-8")
-(ROOT / "tables_appendix_generated.tex").write_text(NL.join(t_ for t_ in out_tab if _label(t_) not in MAINTAB), encoding="utf-8")
+(ROOT / "tables_appendix_generated.tex").write_text(NL.join(t_ for t_ in out_tab if _label(t_) not in MAINTAB).replace("\\begin{table}[t]", "\\begin{table}[H]"), encoding="utf-8")  # appendix tables stay where they are written, under their heading
 (ROOT / "numbers_generated.tex").write_text("\n".join(out_num) + "\n", encoding="utf-8")
 print("tables:", len(out_tab), "macros:", len(out_num))

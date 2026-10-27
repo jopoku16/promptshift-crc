@@ -1,4 +1,4 @@
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{PromptShift-CRC minus a comparator, paired by seed. Negative means PromptShift-CRC is lower (better for violation; sharper for threshold).}
@@ -33,7 +33,7 @@ safety-intent shift & matched Adaptive CRC & +0.0032 & 0.0004 & 0/30 & -0.0058 &
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{MMLU with Qwen2.5-1.5B-Instruct, category blocks (24 streams; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -62,7 +62,7 @@ Quantile tracking & 0.900 $\pm$ 0.001 & 0.098 $\pm$ 0.006 & 0.137 & 0.960 & 1.00
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{MMLU with Qwen2.5-1.5B-Instruct, subject blocks (20 streams; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -91,7 +91,7 @@ Quantile tracking & 0.900 $\pm$ 0.001 & 0.100 $\pm$ 0.002 & 0.147 & 0.951 & 1.00
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{MMLU with Qwen2.5-1.5B-Instruct, random order, no shift (20 streams; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -118,7 +118,7 @@ Quantile tracking & 0.900 $\pm$ 0.001 & 0.138 & 0.960 & 1.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{MMLU with Qwen2.5-1.5B-Instruct, embedding-direction order (forward) (1 stream; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -145,7 +145,7 @@ Quantile tracking & 0.900 & 0.150 & 0.959 & 1.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{MMLU with Qwen2.5-1.5B-Instruct, embedding-direction order (reversed) (1 stream; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -172,7 +172,7 @@ Quantile tracking & 0.900 & 0.142 & 0.956 & 1.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{MMLU with Qwen2.5-1.5B-Instruct, question-length order (1 stream; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -199,7 +199,7 @@ Quantile tracking & 0.900 & 0.150 & 0.958 & 1.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{RealToxicityPrompts with GPT-2 continuations, prompt-toxicity bands in blocks (24 streams; mean and sd over streams). Risk: toxicity probability of the continuation.}
@@ -228,7 +228,7 @@ Quantile tracking & 0.900 $\pm$ 0.005 & 0.099 $\pm$ 0.017 & 0.244 & 0.167 & 0.15
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{RealToxicityPrompts with GPT-2 continuations, random order, no shift (20 streams; mean and sd over streams). Risk: toxicity probability of the continuation.}
@@ -255,7 +255,7 @@ Quantile tracking & 0.900 $\pm$ 0.001 & 0.200 & 0.079 & 0.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{RealToxicityPrompts with GPT-2 continuations, embedding-direction order (forward) (1 stream; mean and sd over streams). Risk: toxicity probability of the continuation.}
@@ -282,7 +282,7 @@ Quantile tracking & 0.896 & 0.217 & 0.089 & 0.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{RealToxicityPrompts with GPT-2 continuations, embedding-direction order (reversed) (1 stream; mean and sd over streams). Risk: toxicity probability of the continuation.}
@@ -309,7 +309,7 @@ Quantile tracking & 0.903 & 0.217 & 0.086 & 0.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{RealToxicityPrompts with GPT-2 continuations, prompt-length order (1 stream; mean and sd over streams). Risk: toxicity probability of the continuation.}
@@ -336,7 +336,7 @@ Quantile tracking & 0.901 & 0.200 & 0.082 & 0.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{RealToxicityPrompts with GPT-2 continuations, ascending prompt toxicity (1 stream; mean and sd over streams). Risk: toxicity probability of the continuation.}
@@ -363,7 +363,7 @@ Quantile tracking & 0.888 & 0.250 & 0.129 & 0.087 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{RealToxicityPrompts with GPT-2 continuations, descending prompt toxicity (1 stream; mean and sd over streams). Risk: toxicity probability of the continuation.}
@@ -390,7 +390,7 @@ Quantile tracking & 0.912 & 0.183 & 0.163 & 0.125 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{RealToxicityPrompts with Qwen2.5-0.5B continuations (replication), prompt-toxicity bands in blocks (24 streams; mean and sd over streams). Risk: toxicity probability of the continuation.}
@@ -419,7 +419,7 @@ Quantile tracking & 0.900 $\pm$ 0.004 & 0.100 $\pm$ 0.018 & 0.229 & 0.142 & 0.02
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{TruthfulQA with Qwen2.5-1.5B-Instruct, category blocks (20 streams; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -448,7 +448,7 @@ Quantile tracking & 0.900 $\pm$ 0.000 & 0.100 $\pm$ 0.002 & 0.121 & 0.998 & 1.00
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{TruthfulQA with Qwen2.5-1.5B-Instruct, random order, no shift (20 streams; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -475,7 +475,7 @@ Quantile tracking & 0.900 $\pm$ 0.000 & 0.117 & 0.999 & 1.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{TruthfulQA with Qwen2.5-1.5B-Instruct, embedding-direction order (forward) (1 stream; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -502,7 +502,7 @@ Quantile tracking & 0.900 & 0.117 & 0.999 & 1.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{TruthfulQA with Qwen2.5-1.5B-Instruct, embedding-direction order (reversed) (1 stream; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -529,7 +529,7 @@ Quantile tracking & 0.900 & 0.117 & 0.999 & 1.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{TruthfulQA with Qwen2.5-1.5B-Instruct, question-length order (1 stream; mean and sd over streams). Risk: one minus the probability of the correct answer.}
@@ -556,7 +556,7 @@ Quantile tracking & 0.900 & 0.117 & 0.999 & 1.000 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{Frontier gap on TRUTHFULQA streams (post-shift violation minus the Adaptive-CRC window-sweep curve at the same mean threshold; mean over orderings with standard error). Negative is better than Adaptive CRC. Where a method's mean threshold lies outside the range of the window sweep the curve is clipped to its nearest end; the last column repeats the PromptShift-CRC gap over the orderings whose threshold lies inside the range.}
@@ -572,7 +572,7 @@ category blocks & -0.0004 (0.0007) & -0.0004 (0.0007) & +0.0003 (0.0004) & -0.01
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{Proxy streams built from benchmark fields (no model outputs). Coverage with moving-block-bootstrap standard error.}
@@ -615,7 +615,7 @@ RealToxicityPrompts & Static & 0.891 & 0.005 & 0.179 & 0.208 \\
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{RealToxicityPrompts across generators, classifiers and target levels (24 band orderings each). PromptShift-CRC minus the matched baseline, post-shift violation with standard error and number of orderings in which PromptShift-CRC is lower, and mean threshold; frontier gaps of PromptShift-CRC and DtACI.}
@@ -634,7 +634,7 @@ GPT-2, toxic-bert, $\alpha=0.2$ & -0.0031 (0.0019) & 13/24 & -0.0025 & 21/24 & -
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{MMLU category blocks (24 orderings) at three target levels, all constants as declared. The spread is the range over the four categories of the $(1-\alpha)$ quantile of the risk. PromptShift-CRC minus the matched baseline in post-shift violation (standard error, number of orderings in which PromptShift-CRC is lower) and in mean threshold; frontier gaps of PromptShift-CRC (over all orderings and over those inside the range of the window sweep), kernel weights with the update, and DtACI.}
@@ -652,7 +652,7 @@ $\alpha=0.3$ & 0.242 & -0.0004 (0.0013) & 11/24 & -0.0000 & +0.0002 (0.0012) & +
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{All four L-ARC configurations (the first of each group is the pre-declared primary one). Coverage, frontier gap and the difference from PromptShift-CRC, as in the previous table.}
@@ -691,7 +691,7 @@ TruthfulQA, category blocks & L-ARC, authors' defaults ($\eta_1=1$, length scale
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{Frontier gap (post-shift violation minus the Adaptive CRC window-sweep curve at the method's own mean threshold; mean over 24 orderings with standard error) for kernel bandwidths $h/4$ to $2h$, with the gate centre and slope rescaled with the bandwidth. In square brackets, the number of orderings (of 24) whose mean threshold lies inside the range of the window sweep; where it is small the gap is measured against the clipped end of the curve. Top three settings: the declared band-block and category-block orderings. Others: orderings in which blocks of 128 prompts cycle through the regimes.}
@@ -722,7 +722,7 @@ MMLU, $\alpha=0.3$: recurring regimes & PromptShift-CRC & -0.0001 (0.0001) [24] 
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{Does the pre-gate drift predict violations? For each stream the steps after the calibration prefix are split by whether the pre-gate drift is in the top decile of that stream. Columns: violation rate in the top decile minus the rate elsewhere, AUC of the drift for the violation indicator (mean and standard error over orderings, or over seeds for the synthetic streams), and the Spearman correlation across shifts between the jump in drift at the boundary and the post-shift violation, with a 95\% bootstrap interval. Left: violations of PromptShift-CRC (the primary outcome). Right: violations of the matched baseline (robustness).}
@@ -745,7 +745,7 @@ synthetic: safety-intent shift & +0.051 (0.005) & 0.553 (0.004) & -0.20 [-0.38, 
 }
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \caption{Settings used in every experiment. $W$ is the full window, ``recent'' the recency window, $h$ the kernel bandwidth, gate centre $c$ and slope $\lambda$ as in Section~\ref{sec:method}, $\gamma$ the step of the online update, and ``pool'' the length of the history used by the weighted rules. All use $\alpha=0.1$ except the rows that give another level. The synthetic constants are those of the earlier version of this work and were not changed; the real-stream constants follow rules fixed in advance. ``Bound'' is the Theorem~\ref{thm:longrun} bound on the distance between coverage and $0.90$. For the proxy streams the window lengths follow the rule in the released script (a fraction of the stream length with caps).}
