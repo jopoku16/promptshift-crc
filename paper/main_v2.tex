@@ -59,7 +59,6 @@ Prompts sent to a foundation model change over time, and a risk threshold calibr
 \clearpage
 
 \section*{Declaration of AI use}
-The authors used large language models (Anthropic's Claude models) to write and debug code, to run and check the experiments and proofs, and to draft and edit text. The study design, including the evaluation protocol, was developed with the model's assistance; the authors approved each design choice, reviewed every result and every proof, and take full responsibility for the content. No language model is an author. All numbers in the results sections are generated from the released result files by the released scripts.
 
 \section*{Data and code availability}
 The code, the recorded model outputs (risk scores, features and the identifiers needed to rebuild the streams), the result tables and the paper source are in the public repository \url{https://github.com/jopoku16/promptshift-crc}. Question and prompt text from MMLU and TruthfulQA can be re-downloaded from the public datasets; the RealToxicityPrompts prompt and continuation text is withheld from the release because it contains offensive language, and the generation script regenerates it. Sampled continuations are not bit-reproducible across hardware, so the released risk scores are canonical. Appendix~\ref{app:repro} gives the commands.
