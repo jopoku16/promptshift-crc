@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this code or the paper, please cite it."
-title: "PromptShift-CRC: Drift-Aware Conformal Risk Control for Foundation Models Under Prompt and Domain Shift"
+title: "PromptShift-CRC: What Drift-Aware Weighting Adds to Online Conformal Risk Control for Foundation Models"
 authors:
   - family-names: Opoku
     given-names: Jeffery
