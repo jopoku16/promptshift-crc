@@ -2,7 +2,7 @@
 
 Code, model outputs, result tables and the paper source for
 
-> Opoku, J. and Banahene, D. *Conformal Risk Control for Foundation Models Under Prompt Shift: What Weighting Adds to the Online Update.*
+> Opoku, J. and Banahene, D. *PromptShift-CRC: Drift-Aware Conformal Risk Control for Foundation Models Under Prompt and Domain Shift.*
 
 ## What this is
 

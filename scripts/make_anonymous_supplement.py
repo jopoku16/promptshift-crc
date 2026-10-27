@@ -10,8 +10,8 @@ if OUT.exists():
     shutil.rmtree(OUT)
 shutil.copytree(REL, OUT, ignore=shutil.ignore_patterns("paper", "CITATION.cff", "LICENSE", "build_tmlr.py", "make_release.py", "make_anonymous_supplement.py", "__pycache__", ".git"))
 readme = (OUT / "README.md").read_text(encoding="utf-8")
-readme = readme.replace("Code, model outputs, result tables and the paper source for\n\n> Opoku, J. and Banahene, D. *Conformal Risk Control for Foundation Models Under Prompt Shift: What Weighting Adds to the Online Update.*",
-                        "Code, model outputs and result tables for the submission *Conformal Risk Control for Foundation Models Under Prompt Shift: What Weighting Adds to the Online Update* (anonymous supplementary material).")
+readme = readme.replace("Code, model outputs, result tables and the paper source for\n\n> Opoku, J. and Banahene, D. *PromptShift-CRC: Drift-Aware Conformal Risk Control for Foundation Models Under Prompt and Domain Shift.*",
+                        "Code, model outputs and result tables for the submission *PromptShift-CRC: Drift-Aware Conformal Risk Control for Foundation Models Under Prompt and Domain Shift* (anonymous supplementary material).")
 readme = readme.split("## Licence and citation")[0].rstrip() + "\n\n## Licence\n\nMIT licence; the full text and the authors' names are added on acceptance.\n"
 readme = readme.replace("`figures_v2/` the figures. `paper/` the paper source and PDF.", "`figures_v2/` the figures.")
 (OUT / "README.md").write_text(readme, encoding="utf-8")

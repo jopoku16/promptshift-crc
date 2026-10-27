@@ -37,9 +37,9 @@ PREAMBLE = r"""\documentclass{article}
 \newtheorem{remark}{Remark}
 
 """
-AUTHORS = r"""\title{Conformal Risk Control for Foundation Models Under Prompt Shift:\\ What Weighting Adds to the Online Update}
+AUTHORS = r"""\title{PromptShift-CRC: Drift-Aware Conformal Risk Control for Foundation Models Under Prompt and Domain Shift}
 \author{\name Jeffery Opoku \\
-\addr The University of Texas Rio Grande Valley, Edinburg, Texas, USA \\
+\addr School of Mathematical and Statistical Sciences, The University of Texas Rio Grande Valley, Edinburg, Texas, USA \\
 \texttt{jeffery.opoku01@utrgv.edu} (corresponding author)
 \AND
 \name David Banahene \\
@@ -67,7 +67,7 @@ def build(kind: str) -> Path:
     body = SRC[SRC.index(r"\input{numbers_generated}"):]
     # drop the arXiv-style title/author/maketitle block, keep from the abstract on
     abstract = body[body.index(r"\begin{abstract}"):]
-    authors_block = AUTHORS if kind == "preprint" else r"\title{Conformal Risk Control for Foundation Models Under Prompt Shift:\\ What Weighting Adds to the Online Update}" + "\n" + r"\author{Anonymous}" + "\n"
+    authors_block = AUTHORS if kind == "preprint" else r"\title{PromptShift-CRC: Drift-Aware Conformal Risk Control for Foundation Models Under Prompt and Domain Shift}" + "\n" + r"\author{Anonymous}" + "\n"
     head = r"\input{numbers_generated}" + "\n" + authors_block + "\n\\begin{document}\n\\maketitle\n"
     tex = PREAMBLE % ("preprint" if kind == "preprint" else "") + head + abstract
     tex = tex.replace(r"\bibliographystyle{plainnat}", r"\bibliographystyle{tmlr}")
