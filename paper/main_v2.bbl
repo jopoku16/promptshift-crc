@@ -1,4 +1,4 @@
-\begin{thebibliography}{35}
+\begin{thebibliography}{37}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -23,8 +23,8 @@ Anastasios~N. Angelopoulos, Emmanuel~J. Cand{\`e}s, and Ryan~J. Tibshirani.
   Bates]{angelopoulos2024decaying}
 Anastasios~N. Angelopoulos, Rina~Foygel Barber, and Stephen Bates.
 \newblock Online conformal prediction with decaying step sizes.
-\newblock In \emph{International Conference on Machine Learning},
-  2024{\natexlab{a}}.
+\newblock In \emph{International Conference on Machine Learning}, volume 235,
+  pages 1616--1630, 2024{\natexlab{a}}.
 \newblock arXiv:2402.01139.
 
 \bibitem[Angelopoulos et~al.(2024{\natexlab{b}})Angelopoulos, Bates, Fisch,
@@ -58,7 +58,8 @@ Osbert Bastani, Varun Gupta, Christopher Jung, Georgy Noarov, Ramya Ramalingam,
 Aadyot Bhatnagar, Huan Wang, Caiming Xiong, and Yu~Bai.
 \newblock Improved online conformal prediction via strongly adaptive online
   learning.
-\newblock In \emph{International Conference on Machine Learning}, 2023.
+\newblock In \emph{International Conference on Machine Learning}, volume 202,
+  pages 2337--2363, 2023.
 \newblock arXiv:2302.07869.
 
 \bibitem[Cauchois et~al.(2024)Cauchois, Gupta, Ali, and
@@ -116,8 +117,13 @@ Isaac Gibbs, John~J. Cherian, and Emmanuel~J. Cand{\`e}s.
 Leying Guan.
 \newblock Localized conformal prediction: A generalized inference framework for
   conformal prediction.
-\newblock \emph{Biometrika}, 2023.
+\newblock \emph{Biometrika}, 110\penalty0 (1):\penalty0 33--50, 2023.
 \newblock arXiv:2106.08460.
+
+\bibitem[Hanu and {Unitary team}(2020)]{hanu2020detoxify}
+Laura Hanu and {Unitary team}.
+\newblock Detoxify, 2020.
+\newblock GitHub repository, https://github.com/unitaryai/detoxify.
 
 \bibitem[Hendrycks et~al.(2021)Hendrycks, Burns, Basart, Zou, Mazeika, Song,
   and Steinhardt]{hendrycks2021measuring}
@@ -147,8 +153,9 @@ Xiao Li, Joel Kreuzwieser, and Alan Peters.
   service under token-level behavioral instability in llms.
 \newblock \emph{arXiv preprint arXiv:2506.10095}, 2025.
 
-\bibitem[Li et~al.(2024)Li, Chen, Guo, Dong, and Liu]{li2024codeuncertainty}
-Yufei Li, Simin Chen, Yanghong Guo, Yue Dong, and Cong Liu.
+\bibitem[Li et~al.(2024)Li, Chen, Guo, Yang, Dong, and
+  Liu]{li2024codeuncertainty}
+Yufei Li, Simin Chen, Yanghong Guo, Wei Yang, Yue Dong, and Cong Liu.
 \newblock Uncertainty awareness of large language models under code
   distribution shifts: A benchmark study.
 \newblock \emph{arXiv preprint arXiv:2402.05939}, 2024.
@@ -167,7 +174,8 @@ Zhexiao Lin, Yuanyuan Li, Neeraj Sarna, Yuanyuan Gao, and Michael von Gablenz.
 \bibitem[Mohri and Hashimoto(2024)]{mohri2024language}
 Christopher Mohri and Tatsunori Hashimoto.
 \newblock Language models with conformal factuality guarantees.
-\newblock In \emph{International Conference on Machine Learning}, 2024.
+\newblock In \emph{International Conference on Machine Learning}, volume 235,
+  pages 36029--36047, 2024.
 \newblock arXiv:2402.10978.
 
 \bibitem[Nicholson(2026)]{nicholson2026nondeterministic}
@@ -197,11 +205,24 @@ Han Qiu, Jiaxing Huang, Peng Gao, Qin Qi, Xiaoqin Zhang, Ling Shao, and Shijian
   language models.
 \newblock \emph{arXiv preprint arXiv:2410.09962}, 2024.
 
+\bibitem[{Qwen Team}(2024)]{qwen2025technical}
+{Qwen Team}.
+\newblock Qwen2.5 technical report, 2024.
+\newblock arXiv:2412.15115.
+
+\bibitem[Radford et~al.(2019)Radford, Wu, Child, Luan, Amodei, and
+  Sutskever]{radford2019language}
+Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya
+  Sutskever.
+\newblock Language models are unsupervised multitask learners.
+\newblock Technical report, OpenAI, 2019.
+
 \bibitem[Reimers and Gurevych(2019)]{reimers2019sentence}
 Nils Reimers and Iryna Gurevych.
 \newblock Sentence-{BERT}: Sentence embeddings using {S}iamese {BERT}-networks.
 \newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in
-  Natural Language Processing}, 2019.
+  Natural Language Processing and the 9th International Joint Conference on
+  Natural Language Processing}, pages 3982--3992, 2019.
 \newblock arXiv:1908.10084.
 
 \bibitem[Tibshirani et~al.(2019)Tibshirani, Barber, Cand{\`e}s, and
@@ -215,24 +236,19 @@ Ryan~J. Tibshirani, Rina~Foygel Barber, Emmanuel Cand{\`e}s, and Aaditya
   Naesseth]{timans2025continuous}
 Alexander Timans, Rajeev Verma, Eric Nalisnick, and Christian~A. Naesseth.
 \newblock On continuous monitoring of risk violations under unknown shift.
-\newblock In \emph{Conference on Uncertainty in Artificial Intelligence}, 2025.
+\newblock In \emph{Conference on Uncertainty in Artificial Intelligence},
+  volume 286, pages 4204--4226, 2025.
 \newblock arXiv:2506.16416.
 
 \bibitem[Vovk et~al.(2005)Vovk, Gammerman, and Shafer]{vovk2005algorithmic}
 Vladimir Vovk, Alex Gammerman, and Glenn Shafer.
-\newblock Algorithmic learning in a random world.
-\newblock \emph{Springer}, 2005.
+\newblock \emph{Algorithmic Learning in a Random World}.
+\newblock Springer, 2005.
 
-\bibitem[Wang et~al.(2025)Wang, Jiang, Tang, Cheng, and Chen]{wang2025copu}
-Sean Wang, Yicheng Jiang, Yuxin Tang, Lu~Cheng, and Hanjie Chen.
-\newblock Copu: Conformal prediction for uncertainty quantification in natural
-  language generation.
-\newblock \emph{arXiv preprint arXiv:2502.12601}, 2025.
-
-\bibitem[Zaffran et~al.(2022)Zaffran, Dieuleveut, F{\'e}ron, Goude, and
-  Josse]{zaffran2022adaptive}
-Margaux Zaffran, Aymeric Dieuleveut, Olivier F{\'e}ron, Yannig Goude, and Julie
-  Josse.
+\bibitem[Zaffran et~al.(2022)Zaffran, F{\'e}ron, Goude, Josse, and
+  Dieuleveut]{zaffran2022adaptive}
+Margaux Zaffran, Olivier F{\'e}ron, Yannig Goude, Julie Josse, and Aymeric
+  Dieuleveut.
 \newblock Adaptive conformal predictions for time series.
 \newblock In \emph{International Conference on Machine Learning}, 2022.
 \newblock arXiv:2202.07282.

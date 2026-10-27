@@ -748,12 +748,12 @@ synthetic: safety-intent shift & +0.051 (0.005) & 0.553 (0.004) & -0.20 [-0.38, 
 \begin{table}[t]
 \centering
 \small
-\caption{Settings used in every experiment. $W$ is the full window, ``recent'' the recency window, $h$ the kernel bandwidth, gate centre $c$ and slope $\kappa$ as in Section~\ref{sec:method}, $\gamma$ the step of the online update, and ``pool'' the length of the history used by the weighted rules. All use $\alpha=0.1$ except the rows that give another level. The synthetic constants are those of the earlier version of this work and were not changed; the real-stream constants follow rules fixed in advance. ``Bound'' is the Theorem~\ref{thm:longrun} bound on the distance between coverage and $0.90$. For the proxy streams the window lengths follow the rule in the released script (a fraction of the stream length with caps).}
+\caption{Settings used in every experiment. $W$ is the full window, ``recent'' the recency window, $h$ the kernel bandwidth, gate centre $c$ and slope $\lambda$ as in Section~\ref{sec:method}, $\gamma$ the step of the online update, and ``pool'' the length of the history used by the weighted rules. All use $\alpha=0.1$ except the rows that give another level. The synthetic constants are those of the earlier version of this work and were not changed; the real-stream constants follow rules fixed in advance. ``Bound'' is the Theorem~\ref{thm:longrun} bound on the distance between coverage and $0.90$. For the proxy streams the window lengths follow the rule in the released script (a fraction of the stream length with caps).}
 \label{tab:hyper}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrrrrrrr}
 \toprule
-Experiment & Prefix & $W$ & Recent & $h$ & Gate $c$ & Slope $\kappa$ & $\gamma$ & Pool & Bound \\
+Experiment & Prefix & $W$ & Recent & $h$ & Gate $c$ & Slope $\lambda$ & $\gamma$ & Pool & Bound \\
 \midrule
 Synthetic pilot & 300 & 300 & 160 & 1.8 & 2.0 & 2.0 & 0.025 & 3W & 0.018 \\
 Synthetic ablation stream & 300 & 300 & 160 & 1.85 & 2.05 & 2.2 & 0.02 & 3W & 0.022 \\

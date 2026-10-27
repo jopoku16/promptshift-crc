@@ -12,8 +12,7 @@ All return the same trace dictionary as crc_lib.run_stream, so crc_lib.summarise
                          between recent and older prompts): logistic regression on PCA-16 features separates the recent
                          window from the older pool, refit every 25 steps; weights = estimated odds; the online update of
                          the main method is used. This is a simplified stand-in, not the authors' code.
-L-ARC (Zecchin and Simeone 2024) is not reimplemented: no reference code was used and a faithful version needs its
-RKHS machinery. It is discussed in related work only.
+L-ARC (Zecchin and Simeone 2024) is implemented in baselines_larc.py; see L_ARC_NOTES.md.
 """
 from __future__ import annotations
 

@@ -263,6 +263,16 @@ rg_ = [recur_gaps("round4_recur_rtp_gpt2"), recur_gaps("round4_recur_rtp_qwen05b
 check("B9 recurring RTP orderings: DtACI has the lowest frontier gap of all rules (matched, window W, rolling, PromptShift-CRC, quantile tracking, density ratio, DtACI) on both runs",
       all(min(d_, key=d_.get) == "dtaci" for d_ in rg_), str([{k_: round(v_, 4) for k_, v_ in d_.items()} for d_ in rg_]))
 
+allgaps = list(gaps)
+for fn_ in ["real_rtp_qwen05b_frontier", "real_rtp_gpt2_alpha0.05_frontier", "real_rtp_gpt2_alpha0.2_frontier", "real_mmlu_Qwen2.5-1.5B-Instruct_alpha0.2_frontier", "real_mmlu_Qwen2.5-1.5B-Instruct_alpha0.3_frontier"]:
+    d_ = pd.read_csv(RES / f"{fn_}.csv")
+    d_ = d_[(d_.risk == "prob") & (d_.metric == "post_shift_viol") & (d_.method == "promptshift_crc") & d_.family.isin(["bandblock", "catblock"])]
+    allgaps += list(d_["mean"].abs()) + list(d_["mean_inside"].abs().dropna())
+ps_all = bs[bs.method == "promptshift_crc"]
+allgaps += list(ps_all.gap.abs()) + list(ps_all.gap_inside.abs().dropna())
+check("F2 headline over EVERY setting of the study (replication, other levels, bandwidth sweep, recurring regimes; all and inside-range orderings): PS frontier gap at most PSfrontierMaxAbs in absolute value",
+      max(allgaps) <= mv("PSfrontierMaxAbs") + 1e-9, f"max {max(allgaps):.4f} vs {mv('PSfrontierMaxAbs'):.4f}")
+
 # ---------------------------------------------------------------- round 4, item E: L-ARC
 la = pd.read_csv(RES / "round4_larc_summary.csv"); la = la[la.risk == "prob"]
 prim = la[la.config == "larc_eta1_ellDefault"]

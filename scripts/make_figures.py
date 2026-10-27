@@ -56,12 +56,14 @@ def synthetic():
         r = pd.concat([r, pd.read_csv(b)], ignore_index=True)
     names = {"pilot": "pilot", "ablation": "ablation stream", "proto:qa_topic_shift": "QA topic shift",
              "proto:summarization_domain_shift": "summarization shift", "proto:safety_intent_shift": "safety intent shift"}
-    fig, axes = plt.subplots(1, 5, figsize=(6.5 * 2.0, 2.6), sharey=False)
+    fig, axes = plt.subplots(2, 3, figsize=(6.5, 4.6), sharey=False)  # drawn at the printed width, so the 8 pt text stays 8 pt
+    axes = axes.ravel()
     for ax, (st, nm) in zip(axes, names.items()):
-        frontier_panel(ax, r[r.stream == st], "post_shift_viol", nm, ylabel=(st == "pilot"), annotate=(st == "pilot"))
+        frontier_panel(ax, r[r.stream == st], "post_shift_viol", nm, ylabel=(st in ("pilot", "proto:qa_topic_shift")), annotate=(st == "pilot"))
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc="lower center", ncol=7, frameon=False, fontsize=7)
-    fig.tight_layout(rect=(0, 0.1, 1, 1))
+    axes[5].legend(h, l, loc="center", frameon=False, fontsize=7)
+    axes[5].axis("off")
+    fig.tight_layout()
     for ext in ("pdf", "png"):
         fig.savefig(FIG / f"fig_frontier_synthetic.{ext}")
     plt.close(fig)
@@ -77,15 +79,19 @@ def real(task, model="Qwen2.5-1.5B-Instruct"):
     fams = [x for x in fams if x in set(r.family)]
     for risk in ("prob", "error"):
         sub = r[r.risk == risk]
-        fig, axes = plt.subplots(1, len(fams), figsize=(1.9 * len(fams) + 1.5, 2.6))
-        axes = np.atleast_1d(axes)
+        ncols = 4
+        nrows = int(np.ceil((len(fams) + 1) / ncols))  # one spare cell holds the legend
+        fig, axes = plt.subplots(nrows, ncols, figsize=(6.5, 2.35 * nrows))  # drawn at the printed width, so the 8 pt text stays 8 pt
+        axes = axes.ravel()
         for ax, fam in zip(axes, fams):
             g = sub[sub.family == fam]
             met = "post_shift_viol" if g.post_shift_viol.notna().any() else "max_local_viol"
-            frontier_panel(ax, g, met, fam.replace("_", " "), ylabel=(fam == fams[0]), annotate=(fam == fams[0]))
+            frontier_panel(ax, g, met, fam.replace("prompt_toxicity_", "toxicity ").replace("_", " "), ylabel=(fam in fams[::ncols]), annotate=(fam == fams[0]))
         h, l = axes[0].get_legend_handles_labels()
-        fig.legend(h, l, loc="lower center", ncol=7, frameon=False, fontsize=6.5)
-        fig.tight_layout(rect=(0, 0.12, 1, 1))
+        axes[len(fams)].legend(h, l, loc="center", frameon=False, fontsize=6.5)
+        for ax in axes[len(fams):]:
+            ax.axis("off")
+        fig.tight_layout()
         for ext in ("pdf", "png"):
             fig.savefig(FIG / f"fig_frontier_{task}_{risk}.{ext}")
         plt.close(fig)

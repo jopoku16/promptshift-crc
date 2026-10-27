@@ -56,7 +56,7 @@ To regenerate the model outputs themselves (several hours on a CPU): `gen_mmlu_o
 
 ## Caveats
 
-The model-output experiments use small open models, one prompt template and one embedding model. Only RealToxicityPrompts has an upper tail that moves with the prompt. The synthetic generators and their constants come from an earlier version of this work. The paper's Limitations section lists these and the others.
+The model-output experiments use small open models, one prompt template and one embedding model. The target quantile moves materially only on RealToxicityPrompts and on MMLU at alpha = 0.3. The synthetic generators and their constants come from an earlier version of this work. The paper's Limitations section lists these and the others.
 
 ## Licence and citation
 
