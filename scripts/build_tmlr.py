@@ -40,11 +40,11 @@ PREAMBLE = r"""\documentclass{article}
 AUTHORS = r"""\title{Conformal Risk Control for Foundation Models Under Prompt Shift:\\ What Weighting Adds to the Online Update}
 \author{\name Jeffery Opoku \\
 \addr The University of Texas Rio Grande Valley, Edinburg, Texas, USA \\
-\texttt{jeffery.opoku01@utrgv.edu}
+\texttt{jeffery.opoku01@utrgv.edu} (corresponding author)
 \AND
 \name David Banahene \\
-\addr Florida International University, Miami, Florida, USA \\
-\texttt{abanahene54@gmail.com}}
+\addr Department of Biostatistics, Robert Stempel College of Public Health and Social Work, Florida International University, Miami, Florida, USA \\
+\texttt{dbana006@fiu.edu}}
 \def\month{10}
 \def\year{2026}
 \def\openreview{\url{https://openreview.net/forum?id=XXXXXXXXXX}}
